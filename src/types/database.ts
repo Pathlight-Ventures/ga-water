@@ -330,4 +330,79 @@ export enum EnforcementCategory {
   FORMAL = 'Formal',
   INFORMAL = 'Informal',
   RESOLVING = 'Resolving'
-} 
+}
+
+// Database type for Supabase
+export interface Database {
+  public: {
+    Tables: {
+      public_water_systems: {
+        Row: PublicWaterSystem
+        Insert: Omit<PublicWaterSystem, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<PublicWaterSystem, 'id' | 'created_at' | 'updated_at'>>
+      }
+      violations_enforcement: {
+        Row: ViolationEnforcement
+        Insert: Omit<ViolationEnforcement, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<ViolationEnforcement, 'id' | 'created_at' | 'updated_at'>>
+      }
+      facilities: {
+        Row: Facility
+        Insert: Omit<Facility, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Facility, 'id' | 'created_at' | 'updated_at'>>
+      }
+      site_visits: {
+        Row: SiteVisit
+        Insert: Omit<SiteVisit, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<SiteVisit, 'id' | 'created_at' | 'updated_at'>>
+      }
+      lead_copper_samples: {
+        Row: LeadCopperSample
+        Insert: Omit<LeadCopperSample, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<LeadCopperSample, 'id' | 'created_at' | 'updated_at'>>
+      }
+      geographic_areas: {
+        Row: GeographicArea
+        Insert: Omit<GeographicArea, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<GeographicArea, 'id' | 'created_at' | 'updated_at'>>
+      }
+      service_areas: {
+        Row: ServiceArea
+        Insert: Omit<ServiceArea, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<ServiceArea, 'id' | 'created_at' | 'updated_at'>>
+      }
+      events_milestones: {
+        Row: EventMilestone
+        Insert: Omit<EventMilestone, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<EventMilestone, 'id' | 'created_at' | 'updated_at'>>
+      }
+      public_notice_violations: {
+        Row: PublicNoticeViolation
+        Insert: Omit<PublicNoticeViolation, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<PublicNoticeViolation, 'id' | 'created_at' | 'updated_at'>>
+      }
+      reference_codes: {
+        Row: ReferenceCode
+        Insert: Omit<ReferenceCode, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<ReferenceCode, 'id' | 'created_at' | 'updated_at'>>
+      }
+      ansi_areas: {
+        Row: AnsiArea
+        Insert: Omit<AnsiArea, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<AnsiArea, 'id' | 'created_at' | 'updated_at'>>
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+  }
+}
+
+// Alias for Violation type
+export type Violation = ViolationEnforcement 

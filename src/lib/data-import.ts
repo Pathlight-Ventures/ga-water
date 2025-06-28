@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import { PublicWaterSystem, Violation, Facility, SiteVisit, LeadCopperSample, GeographicArea, ReferenceCode } from '@/types/database'
 
 export interface ImportResult {
   success: boolean
@@ -29,75 +28,81 @@ export class DataImporter {
     }
 
     try {
-      // Convert CSV data to JSON format expected by the bulk insert function
-      const jsonData = csvData.map(row => ({
-        submission_year_quarter: row.SUBMISSIONYEARQUARTER || null,
-        pwsid: row.PWSID || null,
-        pws_name: row.PWS_NAME || null,
-        primacy_agency_code: row.PRIMACY_AGENCY_CODE || null,
-        epa_region: row.EPA_REGION || null,
-        season_begin_date: row.SEASON_BEGIN_DATE || null,
-        season_end_date: row.SEASON_END_DATE || null,
-        pws_activity_code: row.PWS_ACTIVITY_CODE || null,
-        pws_deactivation_date: this.parseDate(row.PWS_DEACTIVATION_DATE),
-        pws_type_code: row.PWS_TYPE_CODE || null,
-        dbpr_schedule_cat_code: row.DBPR_SCHEDULE_CAT_CODE || null,
-        cds_id: row.CDS_ID || null,
-        gw_sw_code: row.GW_SW_CODE || null,
-        lt2_schedule_cat_code: row.LT2_SCHEDULE_CAT_CODE || null,
-        owner_type_code: row.OWNER_TYPE_CODE || null,
-        population_served_count: this.parseNumber(row.POPULATION_SERVED_COUNT),
-        pop_cat_2_code: row.POP_CAT_2_CODE || null,
-        pop_cat_3_code: row.POP_CAT_3_CODE || null,
-        pop_cat_4_code: row.POP_CAT_4_CODE || null,
-        pop_cat_5_code: row.POP_CAT_5_CODE || null,
-        pop_cat_11_code: row.POP_CAT_11_CODE || null,
-        primacy_type: row.PRIMACY_TYPE || null,
-        primary_source_code: row.PRIMARY_SOURCE_CODE || null,
-        is_grant_eligible_ind: row.IS_GRANT_ELIGIBLE_IND || null,
-        is_wholesaler_ind: row.IS_WHOLESALER_IND || null,
-        is_school_or_daycare_ind: row.IS_SCHOOL_OR_DAYCARE_IND || null,
-        service_connections_count: this.parseNumber(row.SERVICE_CONNECTIONS_COUNT),
-        submission_status_code: row.SUBMISSION_STATUS_CODE || null,
-        org_name: row.ORG_NAME || null,
-        admin_name: row.ADMIN_NAME || null,
-        email_addr: row.EMAIL_ADDR || null,
-        phone_number: row.PHONE_NUMBER || null,
-        phone_ext_number: row.PHONE_EXT_NUMBER || null,
-        fax_number: row.FAX_NUMBER || null,
-        alt_phone_number: row.ALT_PHONE_NUMBER || null,
-        address_line1: row.ADDRESS_LINE1 || null,
-        address_line2: row.ADDRESS_LINE2 || null,
-        city_name: row.CITY_NAME || null,
-        zip_code: row.ZIP_CODE || null,
-        country_code: row.COUNTRY_CODE || null,
-        first_reported_date: this.parseDate(row.FIRST_REPORTED_DATE),
-        last_reported_date: this.parseDate(row.LAST_REPORTED_DATE),
-        state_code: row.STATE_CODE || null,
-        source_water_protection_code: row.SOURCE_WATER_PROTECTION_CODE || null,
-        source_protection_begin_date: this.parseDate(row.SOURCE_PROTECTION_BEGIN_DATE),
-        outstanding_performer: row.OUTSTANDING_PERFORMER || null,
-        outstanding_perform_begin_date: this.parseDate(row.OUTSTANDING_PERFORM_BEGIN_DATE),
-        reduced_rtcr_monitoring: row.REDUCED_RTCR_MONITORING || null,
-        reduced_monitoring_begin_date: this.parseDate(row.REDUCED_MONITORING_BEGIN_DATE),
-        reduced_monitoring_end_date: this.parseDate(row.REDUCED_MONITORING_END_DATE),
-        seasonal_startup_system: row.SEASONAL_STARTUP_SYSTEM || null
-      }))
+      const batchSize = 1000
+      let totalInserted = 0
+      for (let i = 0; i < csvData.length; i += batchSize) {
+        const batch = csvData.slice(i, i + batchSize)
+        // Convert CSV data to JSON format expected by the bulk insert function
+        const jsonData = batch.map(row => ({
+          submission_year_quarter: row.SUBMISSIONYEARQUARTER || null,
+          pwsid: row.PWSID || null,
+          pws_name: row.PWS_NAME || null,
+          primacy_agency_code: row.PRIMACY_AGENCY_CODE || null,
+          epa_region: row.EPA_REGION || null,
+          season_begin_date: row.SEASON_BEGIN_DATE || null,
+          season_end_date: row.SEASON_END_DATE || null,
+          pws_activity_code: row.PWS_ACTIVITY_CODE || null,
+          pws_deactivation_date: this.parseDate(row.PWS_DEACTIVATION_DATE),
+          pws_type_code: row.PWS_TYPE_CODE || null,
+          dbpr_schedule_cat_code: row.DBPR_SCHEDULE_CAT_CODE || null,
+          cds_id: row.CDS_ID || null,
+          gw_sw_code: row.GW_SW_CODE || null,
+          lt2_schedule_cat_code: row.LT2_SCHEDULE_CAT_CODE || null,
+          owner_type_code: row.OWNER_TYPE_CODE || null,
+          population_served_count: this.parseNumber(row.POPULATION_SERVED_COUNT),
+          pop_cat_2_code: row.POP_CAT_2_CODE || null,
+          pop_cat_3_code: row.POP_CAT_3_CODE || null,
+          pop_cat_4_code: row.POP_CAT_4_CODE || null,
+          pop_cat_5_code: row.POP_CAT_5_CODE || null,
+          pop_cat_11_code: row.POP_CAT_11_CODE || null,
+          primacy_type: row.PRIMACY_TYPE || null,
+          primary_source_code: row.PRIMARY_SOURCE_CODE || null,
+          is_grant_eligible_ind: row.IS_GRANT_ELIGIBLE_IND || null,
+          is_wholesaler_ind: row.IS_WHOLESALER_IND || null,
+          is_school_or_daycare_ind: row.IS_SCHOOL_OR_DAYCARE_IND || null,
+          service_connections_count: this.parseNumber(row.SERVICE_CONNECTIONS_COUNT),
+          submission_status_code: row.SUBMISSION_STATUS_CODE || null,
+          org_name: row.ORG_NAME || null,
+          admin_name: row.ADMIN_NAME || null,
+          email_addr: row.EMAIL_ADDR || null,
+          phone_number: row.PHONE_NUMBER || null,
+          phone_ext_number: row.PHONE_EXT_NUMBER || null,
+          fax_number: row.FAX_NUMBER || null,
+          alt_phone_number: row.ALT_PHONE_NUMBER || null,
+          address_line1: row.ADDRESS_LINE1 || null,
+          address_line2: row.ADDRESS_LINE2 || null,
+          city_name: row.CITY_NAME || null,
+          zip_code: row.ZIP_CODE || null,
+          country_code: row.COUNTRY_CODE || null,
+          first_reported_date: this.parseDate(row.FIRST_REPORTED_DATE),
+          last_reported_date: this.parseDate(row.LAST_REPORTED_DATE),
+          state_code: row.STATE_CODE || null,
+          source_water_protection_code: row.SOURCE_WATER_PROTECTION_CODE || null,
+          source_protection_begin_date: this.parseDate(row.SOURCE_PROTECTION_BEGIN_DATE),
+          outstanding_performer: row.OUTSTANDING_PERFORMER || null,
+          outstanding_perform_begin_date: this.parseDate(row.OUTSTANDING_PERFORM_BEGIN_DATE),
+          reduced_rtcr_monitoring: row.REDUCED_RTCR_MONITORING || null,
+          reduced_monitoring_begin_date: this.parseDate(row.REDUCED_MONITORING_BEGIN_DATE),
+          reduced_monitoring_end_date: this.parseDate(row.REDUCED_MONITORING_END_DATE),
+          seasonal_startup_system: row.SEASONAL_STARTUP_SYSTEM || null
+        }))
 
-      // Call the bulk insert function
-      const { data, error } = await this.supabase
-        .rpc('bulk_insert_water_systems', {
-          p_data: jsonData
-        })
+        // Call the bulk insert function
+        const { data, error } = await this.supabase
+          .rpc('bulk_insert_water_systems', {
+            p_data: jsonData
+          })
 
-      if (error) {
-        result.errors.push(`Bulk insert error: ${error.message}`)
-        return result
+        if (error) {
+          result.errors.push(`Batch ${Math.floor(i / batchSize) + 1} error: ${error.message}`)
+          break
+        }
+        totalInserted += data || 0
       }
 
-      result.success = true
+      result.success = result.errors.length === 0
       result.recordsProcessed = csvData.length
-      result.recordsInserted = data || 0
+      result.recordsInserted = totalInserted
 
     } catch (error) {
       result.errors.push(`Import error: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -119,14 +124,26 @@ export class DataImporter {
     }
 
     try {
+      // Filter out rows with null violation_id since it's required
+      const validData = csvData.filter(row => row.VIOLATION_ID && row.VIOLATION_ID.toString().trim() !== '')
+      
       // Process violations in batches to avoid memory issues
       const batchSize = 1000
       let totalInserted = 0
 
-      for (let i = 0; i < csvData.length; i += batchSize) {
-        const batch = csvData.slice(i, i + batchSize)
-        
-        const violations = batch.map(row => ({
+      for (let i = 0; i < validData.length; i += batchSize) {
+        const batch = validData.slice(i, i + batchSize)
+        // Deduplicate batch by conflict key: submission_year_quarter, pwsid, violation_id
+        const seen = new Set()
+        const dedupedBatch = []
+        for (const row of batch) {
+          const key = `${row.SUBMISSIONYEARQUARTER || ''}|${row.PWSID || ''}|${row.VIOLATION_ID || ''}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            dedupedBatch.push(row)
+          }
+        }
+        const violations = dedupedBatch.map(row => ({
           submission_year_quarter: row.SUBMISSIONYEARQUARTER || null,
           pwsid: row.PWSID || null,
           violation_id: row.VIOLATION_ID || null,
@@ -166,23 +183,21 @@ export class DataImporter {
           enf_first_reported_date: this.parseDate(row.ENF_FIRST_REPORTED_DATE),
           enf_last_reported_date: this.parseDate(row.ENF_LAST_REPORTED_DATE)
         }))
-
         // Insert batch using direct table insert
         const { error } = await this.supabase
           .from('violations_enforcement')
           .upsert(violations, {
             onConflict: 'submission_year_quarter,pwsid,violation_id'
           })
-
         if (error) {
           result.errors.push(`Batch ${Math.floor(i / batchSize) + 1} error: ${error.message}`)
         } else {
-          totalInserted += batch.length
+          totalInserted += dedupedBatch.length
         }
       }
 
       result.success = result.errors.length === 0
-      result.recordsProcessed = csvData.length
+      result.recordsProcessed = validData.length
       result.recordsInserted = totalInserted
 
     } catch (error) {
@@ -293,12 +308,10 @@ export class DataImporter {
   /**
    * Parse date string to ISO format
    */
-  private parseDate(dateStr: any): string | null {
+  parseDate(dateStr: unknown): string | null {
     if (!dateStr) return null
-    
     const str = String(dateStr).trim()
-    if (!str || str === '') return null
-
+    if (!str || str === '' || str === '--->') return null
     // Handle various date formats
     try {
       // Try parsing as MM/DD/YYYY
@@ -306,18 +319,15 @@ export class DataImporter {
         const [month, day, year] = str.split('/')
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
       }
-      
       // Try parsing as YYYY-MM-DD
       if (str.includes('-')) {
         return str
       }
-
       // Try parsing as MM-DD-YYYY
       if (str.match(/^\d{2}-\d{2}-\d{4}$/)) {
         const [month, day, year] = str.split('-')
         return `${year}-${month}-${day}`
       }
-
       return null
     } catch {
       return null
@@ -327,37 +337,13 @@ export class DataImporter {
   /**
    * Parse number string to number
    */
-  private parseNumber(numStr: any): number | null {
+  parseNumber(numStr: unknown): number | null {
     if (!numStr) return null
     
     const num = Number(numStr)
     return isNaN(num) ? null : num
   }
-
-  /**
-   * Validate CSV data structure
-   */
-  validateCSVStructure(csvData: CSVRow[], requiredFields: string[]): { valid: boolean; errors: string[] } {
-    const errors: string[] = []
-    
-    if (!csvData || csvData.length === 0) {
-      errors.push('CSV data is empty')
-      return { valid: false, errors }
-    }
-
-    const firstRow = csvData[0]
-    const missingFields = requiredFields.filter(field => !(field in firstRow))
-
-    if (missingFields.length > 0) {
-      errors.push(`Missing required fields: ${missingFields.join(', ')}`)
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors
-    }
-  }
 }
 
 // Export singleton instance
-export const dataImporter = new DataImporter() 
+export const dataImporter = new DataImporter()

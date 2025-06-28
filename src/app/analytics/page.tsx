@@ -12,7 +12,6 @@ import {
   Droplets,
   Building2,
   MapPin,
-  Calendar,
   Download
 } from 'lucide-react'
 
@@ -78,7 +77,7 @@ export default function AnalyticsPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
               <p className="text-muted-foreground">
-                Comprehensive insights into Georgia's drinking water system performance
+                Comprehensive insights into Georgia&apos;s drinking water system performance
               </p>
             </div>
             <div className="flex gap-2">

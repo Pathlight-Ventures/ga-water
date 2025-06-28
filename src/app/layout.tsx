@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/navigation";
+import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { ChatDialog } from "@/components/chat-dialog";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +28,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
-        <Navigation />
-        {children}
+        <AuthProvider>
+          <Navigation />
+          {children}
+          <ChatDialog />
+        </AuthProvider>
       </body>
     </html>
   );

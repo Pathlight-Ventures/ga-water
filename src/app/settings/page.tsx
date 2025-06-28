@@ -1,24 +1,51 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
 import { 
-  Settings, 
   User, 
   Bell, 
-  Shield, 
   Palette,
   Database,
   Download,
   Save,
-  Eye,
-  EyeOff
+  RefreshCw
 } from 'lucide-react'
+import { useAuth } from '@/lib/contexts/AuthContext'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function SettingsPage() {
+  const { user, isAuthenticated, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.push('/auth/login')
+    }
+  }, [isAuthenticated, loading, router])
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 h-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </main>
+    )
+  }
+
+  // Don't render the page if not authenticated
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -53,26 +80,32 @@ export default function SettingsPage() {
           <TabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>User Profile</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Profile Information
+                </CardTitle>
                 <CardDescription>
-                  Update your personal information and preferences
+                  Update your personal information and account details
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" placeholder="Enter your first name" />
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      value={user?.email || ''} 
+                      disabled 
+                      className="bg-gray-50"
+                    />
+                    <p className="text-xs text-gray-500">Email cannot be changed</p>
                   </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" placeholder="Enter your last name" />
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input id="name" placeholder="Enter your full name" />
                   </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" />
                 </div>
                 
                 <div className="space-y-2">
@@ -109,19 +142,20 @@ export default function SettingsPage() {
           <TabsContent value="notifications" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Notification Preferences
+                </CardTitle>
                 <CardDescription>
-                  Configure how and when you receive notifications
+                  Configure how you receive notifications and alerts
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">Email Notifications</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Receive updates about new data and system changes
-                      </p>
+                      <p className="text-sm text-gray-600">Receive updates via email</p>
                     </div>
                     <Button variant="outline" size="sm">Configure</Button>
                   </div>
@@ -129,19 +163,15 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">Violation Alerts</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Get notified when new violations are reported
-                      </p>
+                      <p className="text-sm text-gray-600">Get notified about new violations</p>
                     </div>
                     <Button variant="outline" size="sm">Configure</Button>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-medium">Data Updates</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Notifications when new data is available
-                      </p>
+                      <h4 className="font-medium">System Updates</h4>
+                      <p className="text-sm text-gray-600">Receive system maintenance notifications</p>
                     </div>
                     <Button variant="outline" size="sm">Configure</Button>
                   </div>
@@ -151,48 +181,42 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="appearance" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Theme Settings</CardTitle>
-                  <CardDescription>
-                    Customize the appearance of the application
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Theme Mode</Label>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  Appearance Settings
+                </CardTitle>
+                <CardDescription>
+                  Customize the look and feel of the application
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Theme</h4>
+                      <p className="text-sm text-gray-600">Choose your preferred theme</p>
+                    </div>
                     <Select defaultValue="light">
-                      <SelectTrigger>
+                      <SelectTrigger className="w-32">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="light">Light</SelectItem>
                         <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
+                        <SelectItem value="auto">Auto</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label>Color Scheme</Label>
-                    <Select defaultValue="blue">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="blue">Blue</SelectItem>
-                        <SelectItem value="green">Green</SelectItem>
-                        <SelectItem value="purple">Purple</SelectItem>
-                        <SelectItem value="orange">Orange</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Font Size</Label>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Font Size</h4>
+                      <p className="text-sm text-gray-600">Adjust text size for better readability</p>
+                    </div>
                     <Select defaultValue="medium">
-                      <SelectTrigger>
+                      <SelectTrigger className="w-32">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -202,151 +226,56 @@ export default function SettingsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Display Options</CardTitle>
-                  <CardDescription>
-                    Configure how data is displayed
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Default View</Label>
-                    <Select defaultValue="table">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="table">Table</SelectItem>
-                        <SelectItem value="cards">Cards</SelectItem>
-                        <SelectItem value="list">List</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Items per Page</Label>
-                    <Select defaultValue="25">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">10</SelectItem>
-                        <SelectItem value="25">25</SelectItem>
-                        <SelectItem value="50">50</SelectItem>
-                        <SelectItem value="100">100</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Date Format</Label>
-                    <Select defaultValue="mm-dd-yyyy">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mm-dd-yyyy">MM/DD/YYYY</SelectItem>
-                        <SelectItem value="dd-mm-yyyy">DD/MM/YYYY</SelectItem>
-                        <SelectItem value="yyyy-mm-dd">YYYY-MM-DD</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="data" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Data Export</CardTitle>
-                  <CardDescription>
-                    Configure data export settings and formats
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Default Export Format</Label>
-                    <Select defaultValue="csv">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="csv">CSV</SelectItem>
-                        <SelectItem value="excel">Excel</SelectItem>
-                        <SelectItem value="json">JSON</SelectItem>
-                        <SelectItem value="pdf">PDF</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Include Metadata</Label>
-                    <Select defaultValue="yes">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="yes">Yes</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Button className="w-full flex items-center gap-2">
-                    <Download className="w-4 h-4" />
-                    Export Current Settings
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Data Refresh</CardTitle>
-                  <CardDescription>
-                    Configure automatic data updates and refresh intervals
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Auto Refresh Interval</Label>
-                    <Select defaultValue="daily">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="never">Never</SelectItem>
-                        <SelectItem value="hourly">Hourly</SelectItem>
-                        <SelectItem value="daily">Daily</SelectItem>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Last Data Update</Label>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary">2025-01-15</Badge>
-                      <Button variant="ghost" size="sm">
-                        <RefreshCw className="w-4 h-4" />
-                      </Button>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="w-5 h-5" />
+                  Data Management
+                </CardTitle>
+                <CardDescription>
+                  Manage your data preferences and export options
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Export Data</h4>
+                      <p className="text-sm text-gray-600">Download your data in various formats</p>
                     </div>
+                    <Button className="flex items-center gap-2">
+                      <Download className="w-4 h-4" />
+                      Export
+                    </Button>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label>Data Source</Label>
-                    <div className="text-sm text-muted-foreground">
-                      Georgia SDWIS Q1 2025
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Data Refresh</h4>
+                      <p className="text-sm text-gray-600">Manually refresh data from the server</p>
                     </div>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4" />
+                      Refresh
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Cache Management</h4>
+                      <p className="text-sm text-gray-600">Clear cached data to free up space</p>
+                    </div>
+                    <Button variant="outline" size="sm">Clear Cache</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

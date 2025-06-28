@@ -30,7 +30,7 @@ export class AnalyticsRepository {
         throw new Error(`Failed to fetch compliance trends: ${error.message}`)
       }
 
-      return (data || []).map((trend: any) => ({
+      return (data || []).map((trend: { month_date: string; total_systems: string; compliant_systems: string; non_compliant_systems: string; compliance_rate: string }) => ({
         month_date: trend.month_date,
         total_systems: Number(trend.total_systems) || 0,
         compliant_systems: Number(trend.compliant_systems) || 0,
@@ -46,7 +46,7 @@ export class AnalyticsRepository {
   /**
    * Get violation trends by category
    */
-  async getViolationTrendsByCategory(monthsBack: number = 12): Promise<any[]> {
+  async getViolationTrendsByCategory(monthsBack: number = 12): Promise<unknown[]> {
     try {
       const { data, error } = await this.supabase
         .from('violations_enforcement')
@@ -64,8 +64,9 @@ export class AnalyticsRepository {
       }
 
       // Group by category and month
-      const trends = data?.reduce((acc: any, violation: any) => {
+      const trends = data?.reduce((acc: Record<string, Record<string, number>>, violation: { non_compl_per_begin_date?: string, violation_category_code?: string }) => {
         const month = violation.non_compl_per_begin_date?.substring(0, 7) // YYYY-MM
+        if (!month) return acc
         const category = violation.violation_category_code || 'Unknown'
         
         if (!acc[month]) acc[month] = {}
@@ -88,7 +89,7 @@ export class AnalyticsRepository {
   /**
    * Get geographic distribution of violations
    */
-  async getGeographicViolationDistribution(): Promise<any[]> {
+  async getGeographicViolationDistribution(): Promise<unknown[]> {
     try {
       const { data, error } = await this.supabase
         .from('violations_enforcement')
@@ -105,7 +106,7 @@ export class AnalyticsRepository {
       }
 
       // Get water system locations for violations
-      const pwsids = [...new Set(data?.map((v: any) => v.pwsid) || [])]
+      const pwsids = [...new Set(data?.map((v: { pwsid: string }) => v.pwsid) || [])]
       
       if (pwsids.length === 0) return []
 
@@ -120,9 +121,9 @@ export class AnalyticsRepository {
       }
 
       // Combine violation data with location data
-      const locationMap = new Map(waterSystems?.map((ws: any) => [ws.pwsid, ws]) || [])
+      const locationMap = new Map(waterSystems?.map((ws: { pwsid: string, city_name: string, state_code: string, county_served: string }) => [ws.pwsid, ws]) || [])
       
-      return data?.map((violation: any) => ({
+      return data?.map((violation: { pwsid: string, is_health_based_ind: string }) => ({
         pwsid: violation.pwsid,
         is_health_based: violation.is_health_based_ind === 'Y',
         city: locationMap.get(violation.pwsid)?.city_name,
@@ -138,7 +139,7 @@ export class AnalyticsRepository {
   /**
    * Get system performance metrics
    */
-  async getSystemPerformanceMetrics(): Promise<any> {
+  async getSystemPerformanceMetrics(): Promise<unknown> {
     try {
       // Get water system stats
       const { data: wsStats, error: wsError } = await this.supabase
@@ -188,7 +189,7 @@ export class AnalyticsRepository {
   /**
    * Get top violating systems
    */
-  async getTopViolatingSystems(limit: number = 10): Promise<any[]> {
+  async getTopViolatingSystems(limit: number = 10): Promise<unknown[]> {
     try {
       const { data, error } = await this.supabase
         .from('violations_enforcement')
@@ -205,14 +206,14 @@ export class AnalyticsRepository {
       }
 
       // Count violations per system
-      const violationCounts = data?.reduce((acc: any, violation: any) => {
+      const violationCounts = data?.reduce((acc: Record<string, number>, violation: { pwsid: string }) => {
         acc[violation.pwsid] = (acc[violation.pwsid] || 0) + 1
         return acc
       }, {}) || {}
 
       // Get top systems by violation count
       const topPwsids = Object.entries(violationCounts)
-        .sort(([,a]: any, [,b]: any) => b - a)
+        .sort(([,a]: [string, number], [,b]: [string, number]) => b - a)
         .slice(0, limit)
         .map(([pwsid]) => pwsid)
 
@@ -229,7 +230,7 @@ export class AnalyticsRepository {
         throw new Error(`Failed to fetch water system details: ${wsError.message}`)
       }
 
-      return waterSystems?.map((ws: any) => ({
+      return waterSystems?.map((ws: { pwsid: string, pws_name: string, city_name: string, state_code: string, population_served_count: number }) => ({
         pwsid: ws.pwsid,
         name: ws.pws_name,
         city: ws.city_name,

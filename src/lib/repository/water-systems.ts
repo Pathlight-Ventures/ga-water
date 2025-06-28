@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/types/database'
 
 export interface WaterSystem {
   id: string

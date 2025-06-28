@@ -150,6 +150,46 @@ This application uses Q1 2025 SDWIS data for the state of Georgia, including:
    npm run dev
    ```
 
+## 🤖 **AI Chat Assistant Setup**
+
+The application includes an AI-powered chat assistant powered by Google's Gemini AI that helps users understand water quality data, regulations, and system information.
+
+### **Setting up Gemini AI**
+
+1. **Get a Gemini API Key**
+   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - Copy the API key
+
+2. **Add to Environment Variables**
+   
+   Add the following to your `.env.local` file:
+   
+   ```bash
+   GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+3. **Features**
+   - **Water Safety Guidance**: Get explanations of water quality standards and regulations
+   - **Data Interpretation**: Understand violation types and compliance requirements
+   - **System Information**: Learn about public water system operations
+   - **Regulatory Help**: Get guidance on EPA and state requirements
+   - **Context-Aware**: Uses real-time data from your Supabase database
+
+4. **Usage**
+   - Click the chat icon (💬) in the bottom-right corner of any page
+   - Ask questions about water quality, regulations, or data interpretation
+   - The assistant will provide helpful, context-aware responses
+   - All conversations are focused on water safety and quality topics
+
+### **Chat Assistant Capabilities**
+
+- **Water Quality Standards**: Explain MCLs, treatment techniques, and monitoring requirements
+- **Violation Types**: Clarify different categories of violations and their significance
+- **Compliance Guidance**: Help understand regulatory requirements and timelines
+- **Data Navigation**: Guide users through the application's features and data
+- **Safety Information**: Provide public health guidance related to drinking water
+
 ## 📁 **Project Structure**
 
 ```txt
