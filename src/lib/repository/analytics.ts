@@ -110,9 +110,10 @@ export class AnalyticsRepository {
       
       if (pwsids.length === 0) return []
 
+      // Get water system details
       const { data: waterSystems, error: wsError } = await this.supabase
         .from('public_water_systems')
-        .select('pwsid, city_name, state_code, county_served')
+        .select('pwsid, city_name, state_code')
         .in('pwsid', pwsids)
 
       if (wsError) {
@@ -120,16 +121,32 @@ export class AnalyticsRepository {
         throw new Error(`Failed to fetch water system locations: ${wsError.message}`)
       }
 
-      // Combine violation data with location data
-      const locationMap = new Map(waterSystems?.map((ws: { pwsid: string, city_name: string, state_code: string, county_served: string }) => [ws.pwsid, ws]) || [])
+      // Get geographic areas for county data
+      const { data: geoAreas, error: geoError } = await this.supabase
+        .from('geographic_areas')
+        .select('pwsid, county_served')
+        .in('pwsid', pwsids)
+        .not('county_served', 'is', null)
+
+      if (geoError) {
+        console.error('Error fetching geographic areas:', geoError)
+        // Continue without county data if there's an error
+      }
+
+      // Create maps for easy lookup
+      const waterSystemMap = new Map(waterSystems?.map((ws: { pwsid: string, city_name: string, state_code: string }) => [ws.pwsid, ws]) || [])
+      const countyMap = new Map(geoAreas?.map((ga: { pwsid: string, county_served: string }) => [ga.pwsid, ga.county_served]) || [])
       
-      return data?.map((violation: { pwsid: string, is_health_based_ind: string }) => ({
-        pwsid: violation.pwsid,
-        is_health_based: violation.is_health_based_ind === 'Y',
-        city: locationMap.get(violation.pwsid)?.city_name,
-        state: locationMap.get(violation.pwsid)?.state_code,
-        county: locationMap.get(violation.pwsid)?.county_served
-      })) || []
+      return data?.map((violation: { pwsid: string, is_health_based_ind: string }) => {
+        const waterSystem = waterSystemMap.get(violation.pwsid)
+        return {
+          pwsid: violation.pwsid,
+          is_health_based: violation.is_health_based_ind === 'Y',
+          city: waterSystem?.city_name,
+          state: waterSystem?.state_code,
+          county: countyMap.get(violation.pwsid) || waterSystem?.city_name // Fallback to city name if no county
+        }
+      }) || []
     } catch (error) {
       console.error('Repository error:', error)
       throw error
@@ -238,6 +255,83 @@ export class AnalyticsRepository {
         population: ws.population_served_count,
         violation_count: violationCounts[ws.pwsid] || 0
       })) || []
+    } catch (error) {
+      console.error('Repository error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get county-based statistics
+   */
+  async getCountyStatistics(): Promise<unknown[]> {
+    try {
+      // Get all water systems with their geographic data
+      const { data: waterSystems, error: wsError } = await this.supabase
+        .from('public_water_systems')
+        .select('pwsid, city_name, state_code, population_served_count')
+
+      if (wsError) {
+        console.error('Error fetching water systems:', wsError)
+        throw new Error(`Failed to fetch water systems: ${wsError.message}`)
+      }
+
+      // Get geographic areas for county data
+      const { data: geoAreas, error: geoError } = await this.supabase
+        .from('geographic_areas')
+        .select('pwsid, county_served')
+        .not('county_served', 'is', null)
+
+      if (geoError) {
+        console.error('Error fetching geographic areas:', geoError)
+        // Continue without county data if there's an error
+      }
+
+      // Get violations
+      const { data: violations, error: violError } = await this.supabase
+        .from('violations_enforcement')
+        .select('pwsid, violation_status')
+        .eq('violation_status', 'Unaddressed')
+
+      if (violError) {
+        console.error('Error fetching violations:', violError)
+        throw new Error(`Failed to fetch violations: ${violError.message}`)
+      }
+
+      // Create maps for easy lookup
+      const countyMap = new Map(geoAreas?.map((ga: { pwsid: string, county_served: string }) => [ga.pwsid, ga.county_served]) || [])
+      
+      // Count violations per system
+      const violationCounts = violations?.reduce((acc: Record<string, number>, violation: { pwsid: string }) => {
+        acc[violation.pwsid] = (acc[violation.pwsid] || 0) + 1
+        return acc
+      }, {}) || {}
+
+      // Group by county
+      const countyStats = new Map<string, { systems: Set<string>, violations: number, population: number }>()
+
+      waterSystems?.forEach((ws) => {
+        const county = countyMap.get(ws.pwsid) || ws.city_name || 'Unknown'
+        if (!countyStats.has(county)) {
+          countyStats.set(county, { systems: new Set(), violations: 0, population: 0 })
+        }
+        
+        const stats = countyStats.get(county)!
+        stats.systems.add(ws.pwsid)
+        stats.violations += violationCounts[ws.pwsid] || 0
+        stats.population += ws.population_served_count || 0
+      })
+
+      // Convert to array and sort by number of systems
+      return Array.from(countyStats.entries())
+        .map(([county, stats]) => ({
+          county,
+          systems: stats.systems.size,
+          violations: stats.violations,
+          population: stats.population
+        }))
+        .sort((a, b) => b.systems - a.systems)
+        .slice(0, 20) // Top 20 counties
     } catch (error) {
       console.error('Repository error:', error)
       throw error

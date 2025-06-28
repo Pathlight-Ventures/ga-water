@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -12,62 +15,183 @@ import {
   Droplets,
   Building2,
   MapPin,
-  Download
+  Download,
+  Loader2
 } from 'lucide-react'
+import { AnalyticsRepository } from '@/lib/repository/analytics'
+import type { ComplianceTrend } from '@/lib/repository/analytics'
 
-// Mock data for demonstration
-const stats = [
-  {
-    title: 'Total Water Systems',
-    value: '1,247',
-    change: '+12',
-    changeType: 'positive',
-    icon: Building2,
-    description: 'Active public water systems'
-  },
-  {
-    title: 'Compliance Rate',
-    value: '94.2%',
-    change: '+2.1%',
-    changeType: 'positive',
-    icon: CheckCircle,
-    description: 'Systems in compliance'
-  },
-  {
-    title: 'Active Violations',
-    value: '73',
-    change: '-8',
-    changeType: 'negative',
-    icon: AlertTriangle,
-    description: 'Current violations'
-  },
-  {
-    title: 'Population Served',
-    value: '10.7M',
-    change: '+0.3M',
-    changeType: 'positive',
-    icon: Droplets,
-    description: 'Georgia residents served'
+interface SystemStats {
+  water_systems: {
+    total: number
+    active: number
+    with_violations: number
+    total_population: number
+    avg_population: number
   }
-]
+  violations: {
+    total: number
+    active: number
+    health_based: number
+    avg_resolution_days: number
+  }
+  compliance_rate: string
+}
 
-const violationData = [
-  { category: 'Microbiological', count: 23, percentage: 31.5 },
-  { category: 'Chemical', count: 18, percentage: 24.7 },
-  { category: 'Radiological', count: 12, percentage: 16.4 },
-  { category: 'Lead & Copper', count: 11, percentage: 15.1 },
-  { category: 'Other', count: 9, percentage: 12.3 }
-]
+interface ViolationCategory {
+  category: string
+  count: number
+  percentage: number
+}
 
-const countyData = [
-  { county: 'Fulton', systems: 45, violations: 8, population: 1048000 },
-  { county: 'Gwinnett', systems: 38, violations: 6, population: 936000 },
-  { county: 'Cobb', systems: 32, violations: 5, population: 760000 },
-  { county: 'DeKalb', systems: 29, violations: 7, population: 750000 },
-  { county: 'Chatham', systems: 25, violations: 4, population: 295000 }
-]
+interface CountyData {
+  county: string
+  systems: number
+  violations: number
+  population: number
+}
 
 export default function AnalyticsPage() {
+  const [stats, setStats] = useState<SystemStats | null>(null)
+  const [complianceTrends, setComplianceTrends] = useState<ComplianceTrend[]>([])
+  const [violationCategories, setViolationCategories] = useState<ViolationCategory[]>([])
+  const [countyData, setCountyData] = useState<CountyData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [timeRange, setTimeRange] = useState('q1-2025')
+
+  const analyticsRepo = new AnalyticsRepository()
+
+  useEffect(() => {
+    loadAnalyticsData()
+  }, [timeRange])
+
+  const loadAnalyticsData = async () => {
+    setLoading(true)
+    setError(null)
+    
+    try {
+      // Load system performance metrics
+      const systemMetrics = await analyticsRepo.getSystemPerformanceMetrics() as SystemStats
+      setStats(systemMetrics)
+
+      // Load compliance trends
+      const trends = await analyticsRepo.getComplianceTrends({ monthsBack: 12 })
+      setComplianceTrends(trends)
+
+      // Load violation trends by category
+      const violationTrendsRaw = await analyticsRepo.getViolationTrendsByCategory(12)
+      const violationTrends = violationTrendsRaw as { month: string, categories: Record<string, number> }[]
+      
+      // Process violation categories
+      const categoryMap = new Map<string, number>()
+      violationTrends.forEach((trend) => {
+        Object.entries(trend.categories).forEach(([category, count]) => {
+          const currentCount = categoryMap.get(category) || 0
+          categoryMap.set(category, currentCount + (count as number))
+        })
+      })
+
+      const totalViolations = Array.from(categoryMap.values()).reduce((sum, count) => sum + count, 0)
+      const categories: ViolationCategory[] = Array.from(categoryMap.entries()).map(([category, count]) => ({
+        category,
+        count,
+        percentage: totalViolations > 0 ? Math.round((count / totalViolations) * 100) : 0
+      })).sort((a, b) => b.count - a.count)
+
+      setViolationCategories(categories)
+
+      // Load county statistics
+      const countyStats = await analyticsRepo.getCountyStatistics() as CountyData[]
+      setCountyData(countyStats.slice(0, 10)) // Top 10 counties
+
+    } catch (err) {
+      console.error('Error loading analytics data:', err)
+      setError('Failed to load analytics data. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M'
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K'
+    }
+    return num.toLocaleString()
+  }
+
+  const getStatsCards = () => {
+    if (!stats) return []
+
+    return [
+      {
+        title: 'Total Water Systems',
+        value: formatNumber(stats.water_systems.total),
+        change: '+12',
+        changeType: 'positive' as const,
+        icon: Building2,
+        description: 'Active public water systems'
+      },
+      {
+        title: 'Compliance Rate',
+        value: `${stats.compliance_rate}%`,
+        change: '+2.1%',
+        changeType: 'positive' as const,
+        icon: CheckCircle,
+        description: 'Systems in compliance'
+      },
+      {
+        title: 'Active Violations',
+        value: stats.violations.active.toString(),
+        change: '-8',
+        changeType: 'negative' as const,
+        icon: AlertTriangle,
+        description: 'Current violations'
+      },
+      {
+        title: 'Population Served',
+        value: formatNumber(stats.water_systems.total_population),
+        change: '+0.3M',
+        changeType: 'positive' as const,
+        icon: Droplets,
+        description: 'Georgia residents served'
+      }
+    ]
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+              <p className="text-gray-600">Loading analytics data...</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertTriangle className="w-8 h-8 mx-auto mb-4 text-red-600" />
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={loadAnalyticsData}>Try Again</Button>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -81,7 +205,7 @@ export default function AnalyticsPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Select defaultValue="q1-2025">
+              <Select value={timeRange} onValueChange={setTimeRange}>
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
@@ -101,7 +225,7 @@ export default function AnalyticsPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat) => {
+          {getStatsCards().map((stat) => {
             const Icon = stat.icon
             return (
               <Card key={stat.title} className="hover:shadow-lg transition-shadow">
@@ -155,7 +279,7 @@ export default function AnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {violationData.map((item) => (
+                    {violationCategories.map((item) => (
                       <div key={item.category} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -199,40 +323,35 @@ export default function AnalyticsPage() {
           <TabsContent value="counties" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>County Performance</CardTitle>
+                <CardTitle>County Overview</CardTitle>
                 <CardDescription>
-                  Water system performance by county
+                  Water systems and violations by county
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {countyData.map((county) => (
-                    <div key={county.county} className="flex items-center justify-between p-4 border rounded-lg">
+                  {countyData.map((item) => (
+                    <div key={item.county} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-blue-600" />
-                        </div>
+                        <MapPin className="w-5 h-5 text-gray-400" />
                         <div>
-                          <h3 className="font-semibold">{county.county} County</h3>
+                          <h3 className="font-semibold">{item.county}</h3>
                           <p className="text-sm text-muted-foreground">
-                            {county.population.toLocaleString()} residents
+                            {item.systems} water systems
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground">Systems</p>
-                          <p className="font-semibold">{county.systems}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground">Violations</p>
-                          <Badge variant={county.violations > 5 ? "destructive" : "secondary"}>
-                            {county.violations}
+                      <div className="text-right">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={item.violations > 0 ? "destructive" : "default"}>
+                            {item.violations} violations
                           </Badge>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          View Details
-                        </Button>
+                        {item.population > 0 && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {formatNumber(item.population)} residents
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -242,49 +361,41 @@ export default function AnalyticsPage() {
           </TabsContent>
 
           <TabsContent value="trends" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Compliance Trends */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Compliance Trends</CardTitle>
-                  <CardDescription>
-                    Monthly compliance rate changes
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Trend analysis coming soon</p>
-                      <p className="text-sm text-gray-400">
-                        Historical compliance data and projections
-                      </p>
+            <Card>
+              <CardHeader>
+                <CardTitle>Compliance Trends</CardTitle>
+                <CardDescription>
+                  Monthly compliance rates over the past year
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {complianceTrends.slice(-6).map((trend) => (
+                    <div key={trend.month_date} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-semibold">
+                          {new Date(trend.month_date).toLocaleDateString('en-US', { 
+                            month: 'long', 
+                            year: 'numeric' 
+                          })}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {trend.total_systems} total systems
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600">
+                          {trend.compliance_rate}%
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {trend.compliant_systems} compliant, {trend.non_compliant_systems} non-compliant
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* System Growth */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>System Growth</CardTitle>
-                  <CardDescription>
-                    New water systems and population served
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <div className="text-center">
-                      <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Growth metrics coming soon</p>
-                      <p className="text-sm text-gray-400">
-                        System expansion and population growth trends
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
