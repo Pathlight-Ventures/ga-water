@@ -1,8 +1,180 @@
 -- Database Functions and Stored Procedures for SDWIS Data
--- These functions provide a secure API layer and prevent SQL injection
+-- These functions provide a secure API layer with authentication and role-based access control
 
 -- =====================================================
--- PUBLIC WATER SYSTEMS FUNCTIONS
+-- AUTHENTICATION HELPER FUNCTIONS
+-- =====================================================
+
+-- Function to get current user's role
+CREATE OR REPLACE FUNCTION get_current_user_role()
+RETURNS user_role_enum AS $$
+DECLARE
+    user_role user_role_enum;
+BEGIN
+    SELECT role INTO user_role
+    FROM user_profiles
+    WHERE id = auth.uid();
+    
+    RETURN COALESCE(user_role, 'public');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to check if user has permission
+CREATE OR REPLACE FUNCTION has_permission(p_permission permission_enum)
+RETURNS BOOLEAN AS $$
+DECLARE
+    user_role user_role_enum;
+BEGIN
+    -- Get current user's role
+    user_role := get_current_user_role();
+    
+    -- Check if user has the required permission
+    RETURN EXISTS (
+        SELECT 1 FROM role_permissions
+        WHERE role = user_role AND permission = p_permission
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to log audit events
+CREATE OR REPLACE FUNCTION log_audit_event(
+    p_action VARCHAR(100),
+    p_table_name VARCHAR(100) DEFAULT NULL,
+    p_record_id UUID DEFAULT NULL,
+    p_old_values JSONB DEFAULT NULL,
+    p_new_values JSONB DEFAULT NULL
+) RETURNS VOID AS $$
+BEGIN
+    INSERT INTO audit_log (
+        user_id,
+        action,
+        table_name,
+        record_id,
+        old_values,
+        new_values,
+        ip_address,
+        user_agent
+    ) VALUES (
+        auth.uid(),
+        p_action,
+        p_table_name,
+        p_record_id,
+        p_old_values,
+        p_new_values,
+        inet_client_addr(),
+        current_setting('request.headers', true)::json->>'user-agent'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- =====================================================
+-- USER MANAGEMENT FUNCTIONS
+-- =====================================================
+
+-- Create or update user profile
+CREATE OR REPLACE FUNCTION upsert_user_profile(
+    p_email VARCHAR(255),
+    p_full_name VARCHAR(255) DEFAULT NULL,
+    p_organization VARCHAR(255) DEFAULT NULL,
+    p_role user_role_enum DEFAULT 'public',
+    p_pwsid VARCHAR(9) DEFAULT NULL,
+    p_phone VARCHAR(20) DEFAULT NULL,
+    p_address TEXT DEFAULT NULL
+) RETURNS UUID AS $$
+DECLARE
+    profile_id UUID;
+BEGIN
+    -- Check if user has permission to manage users (only admins)
+    IF NOT has_permission('manage_users') THEN
+        RAISE EXCEPTION 'Insufficient permissions to manage user profiles';
+    END IF;
+    
+    -- Insert or update user profile
+    INSERT INTO user_profiles (
+        id,
+        email,
+        full_name,
+        organization,
+        role,
+        pwsid,
+        phone,
+        address
+    ) VALUES (
+        auth.uid(),
+        p_email,
+        p_full_name,
+        p_organization,
+        p_role,
+        p_pwsid,
+        p_phone,
+        p_address
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        full_name = EXCLUDED.full_name,
+        organization = EXCLUDED.organization,
+        role = EXCLUDED.role,
+        pwsid = EXCLUDED.pwsid,
+        phone = EXCLUDED.phone,
+        address = EXCLUDED.address,
+        updated_at = NOW()
+    RETURNING id INTO profile_id;
+    
+    -- Log the audit event
+    PERFORM log_audit_event('upsert_user_profile', 'user_profiles', profile_id);
+    
+    RETURN profile_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Get user profile
+CREATE OR REPLACE FUNCTION get_user_profile(p_user_id UUID DEFAULT NULL)
+RETURNS TABLE (
+    id UUID,
+    email VARCHAR(255),
+    full_name VARCHAR(255),
+    organization VARCHAR(255),
+    role user_role_enum,
+    pwsid VARCHAR(9),
+    phone VARCHAR(20),
+    address TEXT,
+    is_active BOOLEAN,
+    last_login TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE
+) AS $$
+BEGIN
+    -- If no user_id provided, use current user
+    IF p_user_id IS NULL THEN
+        p_user_id := auth.uid();
+    END IF;
+    
+    -- Check permissions (users can view their own profile, admins can view all)
+    IF p_user_id != auth.uid() AND NOT has_permission('manage_users') THEN
+        RAISE EXCEPTION 'Insufficient permissions to view this profile';
+    END IF;
+    
+    RETURN QUERY
+    SELECT 
+        up.id,
+        up.email,
+        up.full_name,
+        up.organization,
+        up.role,
+        up.pwsid,
+        up.phone,
+        up.address,
+        up.is_active,
+        up.last_login,
+        up.created_at,
+        up.updated_at
+    FROM user_profiles up
+    WHERE up.id = p_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- =====================================================
+-- PUBLIC WATER SYSTEMS FUNCTIONS (with authentication)
 -- =====================================================
 
 -- Get water system by PWSID
@@ -34,6 +206,11 @@ RETURNS TABLE (
     updated_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read public data
+    IF NOT has_permission('read_public_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to read water system data';
+    END IF;
+    
     RETURN QUERY
     SELECT 
         pws.id,
@@ -91,6 +268,11 @@ RETURNS TABLE (
     created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read public data
+    IF NOT has_permission('read_public_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to search water systems';
+    END IF;
+    
     RETURN QUERY
     SELECT 
         pws.id,
@@ -142,6 +324,11 @@ RETURNS TABLE (
     systems_by_state JSON
 ) AS $$
 BEGIN
+    -- Check if user has permission to view analytics
+    IF NOT has_permission('view_analytics') THEN
+        RAISE EXCEPTION 'Insufficient permissions to view analytics';
+    END IF;
+    
     RETURN QUERY
     WITH stats AS (
         SELECT 
@@ -185,7 +372,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- VIOLATIONS FUNCTIONS
+-- VIOLATIONS FUNCTIONS (with authentication)
 -- =====================================================
 
 -- Get violations for a water system
@@ -219,6 +406,11 @@ RETURNS TABLE (
     created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read public data
+    IF NOT has_permission('read_public_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to read violation data';
+    END IF;
+    
     RETURN QUERY
     SELECT 
         ve.id,
@@ -262,19 +454,18 @@ RETURNS TABLE (
     avg_resolution_days NUMERIC
 ) AS $$
 BEGIN
+    -- Check if user has permission to view analytics
+    IF NOT has_permission('view_analytics') THEN
+        RAISE EXCEPTION 'Insufficient permissions to view violation analytics';
+    END IF;
+    
     RETURN QUERY
     WITH violation_stats AS (
         SELECT 
             COUNT(*) as total_violations,
             COUNT(*) FILTER (WHERE violation_status = 'Unaddressed') as active_violations,
             COUNT(*) FILTER (WHERE is_health_based_ind = 'Y') as health_based_violations,
-            AVG(
-                CASE 
-                    WHEN violation_status = 'Resolved' AND non_compl_per_begin_date IS NOT NULL AND calculated_rtc_date IS NOT NULL
-                    THEN EXTRACT(DAY FROM (calculated_rtc_date - non_compl_per_begin_date))
-                    ELSE NULL
-                END
-            ) as avg_resolution_days
+            AVG(EXTRACT(DAY FROM (non_compl_per_end_date - non_compl_per_begin_date))) as avg_resolution_days
         FROM violations_enforcement
         WHERE submission_year_quarter = (SELECT MAX(submission_year_quarter) FROM violations_enforcement)
     ),
@@ -306,7 +497,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- FACILITIES FUNCTIONS
+-- FACILITIES FUNCTIONS (with authentication)
 -- =====================================================
 
 -- Get facilities for a water system
@@ -315,26 +506,41 @@ RETURNS TABLE (
     id UUID,
     facility_id VARCHAR(12),
     facility_name VARCHAR(100),
-    facility_type_code facility_type_enum,
     facility_activity_code pws_activity_enum,
+    facility_type_code facility_type_enum,
     is_source_ind CHAR(1),
     water_type_code water_type_enum,
     availability_code availability_enum,
+    seller_treatment_code VARCHAR(4),
+    seller_pwsid VARCHAR(9),
+    seller_pws_name VARCHAR(100),
+    filtration_status_code VARCHAR(4),
+    is_source_treated_ind CHAR(1),
     first_reported_date DATE,
     last_reported_date DATE,
     created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read public data
+    IF NOT has_permission('read_public_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to read facility data';
+    END IF;
+    
     RETURN QUERY
     SELECT 
         f.id,
         f.facility_id,
         f.facility_name,
-        f.facility_type_code,
         f.facility_activity_code,
+        f.facility_type_code,
         f.is_source_ind,
         f.water_type_code,
         f.availability_code,
+        f.seller_treatment_code,
+        f.seller_pwsid,
+        f.seller_pws_name,
+        f.filtration_status_code,
+        f.is_source_treated_ind,
         f.first_reported_date,
         f.last_reported_date,
         f.created_at
@@ -345,13 +551,13 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- SITE VISITS FUNCTIONS
+-- SITE VISITS FUNCTIONS (with authentication)
 -- =====================================================
 
 -- Get site visits for a water system
 CREATE OR REPLACE FUNCTION get_site_visits_by_pwsid(
     p_pwsid VARCHAR(9),
-    p_limit INTEGER DEFAULT 20,
+    p_limit INTEGER DEFAULT 50,
     p_offset INTEGER DEFAULT 0
 )
 RETURNS TABLE (
@@ -363,11 +569,25 @@ RETURNS TABLE (
     management_ops_eval_code evaluation_code_enum,
     source_water_eval_code evaluation_code_enum,
     security_eval_code evaluation_code_enum,
+    pumps_eval_code evaluation_code_enum,
+    other_eval_code evaluation_code_enum,
     compliance_eval_code evaluation_code_enum,
+    data_verification_eval_code evaluation_code_enum,
+    treatment_eval_code evaluation_code_enum,
+    finished_water_stor_eval_code evaluation_code_enum,
+    distribution_eval_code evaluation_code_enum,
+    financial_eval_code evaluation_code_enum,
     visit_comments TEXT,
+    first_reported_date DATE,
+    last_reported_date DATE,
     created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read public data
+    IF NOT has_permission('read_public_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to read site visit data';
+    END IF;
+    
     RETURN QUERY
     SELECT 
         sv.id,
@@ -378,8 +598,17 @@ BEGIN
         sv.management_ops_eval_code,
         sv.source_water_eval_code,
         sv.security_eval_code,
+        sv.pumps_eval_code,
+        sv.other_eval_code,
         sv.compliance_eval_code,
+        sv.data_verification_eval_code,
+        sv.treatment_eval_code,
+        sv.finished_water_stor_eval_code,
+        sv.distribution_eval_code,
+        sv.financial_eval_code,
         sv.visit_comments,
+        sv.first_reported_date,
+        sv.last_reported_date,
         sv.created_at
     FROM site_visits sv
     WHERE sv.pwsid = p_pwsid
@@ -390,42 +619,57 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- LEAD AND COPPER FUNCTIONS
+-- LEAD AND COPPER SAMPLES FUNCTIONS (with authentication)
 -- =====================================================
 
 -- Get lead and copper samples for a water system
 CREATE OR REPLACE FUNCTION get_lead_copper_samples_by_pwsid(
     p_pwsid VARCHAR(9),
-    p_contaminant_code VARCHAR(4) DEFAULT NULL,
     p_limit INTEGER DEFAULT 50,
     p_offset INTEGER DEFAULT 0
 )
 RETURNS TABLE (
     id UUID,
     sample_id VARCHAR(20),
+    sampling_end_date DATE,
+    sampling_start_date DATE,
+    reconciliation_id VARCHAR(40),
+    sample_first_reported_date DATE,
+    sample_last_reported_date DATE,
+    sar_id INTEGER,
     contaminant_code VARCHAR(4),
     result_sign_code result_sign_enum,
     sample_measure NUMERIC,
     unit_of_measure VARCHAR(4),
-    sampling_start_date DATE,
-    sampling_end_date DATE,
+    sar_first_reported_date DATE,
+    sar_last_reported_date DATE,
     created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read lab data
+    IF NOT has_permission('read_lab_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to read laboratory data';
+    END IF;
+    
     RETURN QUERY
     SELECT 
         lcs.id,
         lcs.sample_id,
+        lcs.sampling_end_date,
+        lcs.sampling_start_date,
+        lcs.reconciliation_id,
+        lcs.sample_first_reported_date,
+        lcs.sample_last_reported_date,
+        lcs.sar_id,
         lcs.contaminant_code,
         lcs.result_sign_code,
         lcs.sample_measure,
         lcs.unit_of_measure,
-        lcs.sampling_start_date,
-        lcs.sampling_end_date,
+        lcs.sar_first_reported_date,
+        lcs.sar_last_reported_date,
         lcs.created_at
     FROM lead_copper_samples lcs
     WHERE lcs.pwsid = p_pwsid
-        AND (p_contaminant_code IS NULL OR lcs.contaminant_code = p_contaminant_code)
     ORDER BY lcs.sampling_end_date DESC
     LIMIT p_limit
     OFFSET p_offset;
@@ -433,104 +677,125 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- GEOGRAPHIC FUNCTIONS
+-- GEOGRAPHIC AREAS FUNCTIONS (with authentication)
 -- =====================================================
 
 -- Get geographic areas for a water system
 CREATE OR REPLACE FUNCTION get_geographic_areas_by_pwsid(p_pwsid VARCHAR(9))
 RETURNS TABLE (
     id UUID,
-    geo_id VARCHAR(20),
+    area_id VARCHAR(40),
     area_type_code area_type_enum,
-    tribal_code VARCHAR(10),
-    state_served VARCHAR(4),
-    ansi_entity_code VARCHAR(4),
-    zip_code_served VARCHAR(5),
-    city_served VARCHAR(40),
-    county_served VARCHAR(40),
+    area_name VARCHAR(100),
+    state_code VARCHAR(2),
+    county_code VARCHAR(3),
+    city_code VARCHAR(5),
+    zip_code VARCHAR(14),
+    first_reported_date DATE,
+    last_reported_date DATE,
     created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read public data
+    IF NOT has_permission('read_public_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to read geographic data';
+    END IF;
+    
     RETURN QUERY
     SELECT 
         ga.id,
-        ga.geo_id,
+        ga.area_id,
         ga.area_type_code,
-        ga.tribal_code,
-        ga.state_served,
-        ga.ansi_entity_code,
-        ga.zip_code_served,
-        ga.city_served,
-        ga.county_served,
+        ga.area_name,
+        ga.state_code,
+        ga.county_code,
+        ga.city_code,
+        ga.zip_code,
+        ga.first_reported_date,
+        ga.last_reported_date,
         ga.created_at
     FROM geographic_areas ga
     WHERE ga.pwsid = p_pwsid
-    ORDER BY ga.area_type_code;
+    ORDER BY ga.area_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- REFERENCE DATA FUNCTIONS
+-- REFERENCE CODES FUNCTIONS (with authentication)
 -- =====================================================
 
 -- Get reference codes by type
 CREATE OR REPLACE FUNCTION get_reference_codes(p_value_type VARCHAR(40))
 RETURNS TABLE (
-    value_code VARCHAR(40),
-    value_description VARCHAR(250)
+    id UUID,
+    value_type VARCHAR(40),
+    code_value VARCHAR(10),
+    code_description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE
 ) AS $$
 BEGIN
+    -- Check if user has permission to read public data
+    IF NOT has_permission('read_public_data') THEN
+        RAISE EXCEPTION 'Insufficient permissions to read reference data';
+    END IF;
+    
     RETURN QUERY
     SELECT 
-        rc.value_code,
-        rc.value_description
+        rc.id,
+        rc.value_type,
+        rc.code_value,
+        rc.code_description,
+        rc.created_at
     FROM reference_codes rc
     WHERE rc.value_type = p_value_type
-    ORDER BY rc.value_code;
+    ORDER BY rc.code_value;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- =====================================================
--- ANALYTICS FUNCTIONS
+-- ANALYTICS FUNCTIONS (with authentication)
 -- =====================================================
 
--- Get compliance trends over time
+-- Get compliance trends
 CREATE OR REPLACE FUNCTION get_compliance_trends(
     p_months_back INTEGER DEFAULT 12
 )
 RETURNS TABLE (
-    month_date DATE,
-    total_systems BIGINT,
-    compliant_systems BIGINT,
-    non_compliant_systems BIGINT,
+    month_year VARCHAR(7),
+    total_violations BIGINT,
+    resolved_violations BIGINT,
+    new_violations BIGINT,
     compliance_rate NUMERIC
 ) AS $$
 BEGIN
+    -- Check if user has permission to view analytics
+    IF NOT has_permission('view_analytics') THEN
+        RAISE EXCEPTION 'Insufficient permissions to view compliance analytics';
+    END IF;
+    
     RETURN QUERY
     WITH monthly_stats AS (
         SELECT 
-            DATE_TRUNC('month', ve.non_compl_per_begin_date) as month_date,
-            COUNT(DISTINCT pws.pwsid) as total_systems,
-            COUNT(DISTINCT pws.pwsid) FILTER (WHERE ve.violation_status = 'Resolved') as compliant_systems,
-            COUNT(DISTINCT pws.pwsid) FILTER (WHERE ve.violation_status = 'Unaddressed') as non_compliant_systems
-        FROM public_water_systems pws
-        LEFT JOIN violations_enforcement ve ON pws.pwsid = ve.pwsid
-        WHERE pws.submission_year_quarter = (SELECT MAX(submission_year_quarter) FROM public_water_systems)
-            AND (ve.non_compl_per_begin_date IS NULL OR ve.non_compl_per_begin_date >= CURRENT_DATE - INTERVAL '1 month' * p_months_back)
-        GROUP BY DATE_TRUNC('month', ve.non_compl_per_begin_date)
+            TO_CHAR(DATE_TRUNC('month', non_compl_per_begin_date), 'YYYY-MM') as month_year,
+            COUNT(*) as total_violations,
+            COUNT(*) FILTER (WHERE violation_status = 'Resolved') as resolved_violations,
+            COUNT(*) FILTER (WHERE non_compl_per_begin_date >= DATE_TRUNC('month', NOW() - INTERVAL '1 month')) as new_violations
+        FROM violations_enforcement
+        WHERE non_compl_per_begin_date >= NOW() - INTERVAL '1 month' * p_months_back
+        GROUP BY TO_CHAR(DATE_TRUNC('month', non_compl_per_begin_date), 'YYYY-MM')
     )
     SELECT 
-        ms.month_date,
-        ms.total_systems,
-        ms.compliant_systems,
-        ms.non_compliant_systems,
+        ms.month_year,
+        ms.total_violations,
+        ms.resolved_violations,
+        ms.new_violations,
         CASE 
-            WHEN ms.total_systems > 0 
-            THEN ROUND((ms.compliant_systems::NUMERIC / ms.total_systems::NUMERIC) * 100, 2)
-            ELSE 0
+            WHEN ms.total_violations > 0 THEN 
+                ROUND((ms.resolved_violations::NUMERIC / ms.total_violations) * 100, 2)
+            ELSE 0 
         END as compliance_rate
     FROM monthly_stats ms
-    ORDER BY ms.month_date;
+    ORDER BY ms.month_year;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

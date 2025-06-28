@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
+import { createSupabaseClient } from '@/lib/supabase/client'
 
 export interface Violation {
   id: string
@@ -40,7 +40,7 @@ export interface ViolationFilters {
 }
 
 export class ViolationsRepository {
-  private supabase = createClient()
+  private supabase = createSupabaseClient()
 
   /**
    * Get violations for a water system

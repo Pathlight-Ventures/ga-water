@@ -21,7 +21,7 @@ export default function MapPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Geographic Explorer</h1>
               <p className="text-muted-foreground">
-                Interactive map of Georgia's water systems and compliance data
+                Interactive map of Georgia&apos;s water systems and compliance data
               </p>
             </div>
             <div className="flex gap-2">

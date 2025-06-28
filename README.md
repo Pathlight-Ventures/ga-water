@@ -2,6 +2,38 @@
 
 A fullstack application for exploring and analyzing Georgia's Safe Drinking Water Information System (SDWIS) data, designed to serve the EPD Drinking Water Program's diverse stakeholder needs.
 
+## 🔒 **Security Features**
+
+### **Production-Ready Security**
+
+- **Content Security Policy (CSP)**: Prevents XSS attacks and restricts resource loading
+- **Security Headers**: Comprehensive HTTP security headers (XSS Protection, Frame Options, etc.)
+- **Rate Limiting**: Middleware-based rate limiting to prevent abuse
+- **Input Validation**: Zod schemas for all user inputs with sanitization
+- **Row Level Security**: Supabase RLS policies for data access control
+- **Stored Procedures**: All database operations use PostgreSQL functions
+- **Bot Protection**: Automatic detection and blocking of suspicious requests
+
+### **Security Commands**
+
+```bash
+# Run security audit
+npm run security:audit
+
+# Fix security vulnerabilities
+npm run security:fix
+
+# Run complete security check
+npm run security:check
+
+# Test security configuration
+npm run security:test
+```
+
+### **Pre-Deployment Security Checklist**
+
+See [SECURITY.md](./SECURITY.md) for a comprehensive security guide and deployment checklist.
+
 ## 🎯 **EPD Drinking Water Program Stakeholder Support**
 
 ### **Public Access & Transparency**
@@ -176,7 +208,7 @@ src/
 └── types/               # TypeScript type definitions
     └── database.ts     # Database schema types
 
-supabase/
+database/
 ├── schema.sql          # Database schema
 └── functions.sql       # Stored procedures
 ```
