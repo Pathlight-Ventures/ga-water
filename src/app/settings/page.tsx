@@ -6,16 +6,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Settings, 
   User, 
   Bell, 
-  Shield, 
   Palette,
   Database,
   Download,
   Save,
-  Eye,
-  EyeOff
+  RefreshCw
 } from 'lucide-react'
 
 export default function SettingsPage() {

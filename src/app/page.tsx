@@ -1,21 +1,7 @@
 import { DATA_DICTIONARY } from '@/lib/data-dictionary'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { 
-  Droplets, 
-  AlertTriangle, 
-  Building2, 
-  MapPin, 
-  TestTube, 
-  Globe, 
-  Database,
-  Search,
-  BarChart3,
-  Settings
-} from 'lucide-react'
+import { Droplets, AlertTriangle, Building2, MapPin, Database, Search, BarChart3, Settings } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -33,7 +19,7 @@ export default function Home() {
             Georgia Drinking Water Data Explorer
           </p>
           <p className="text-sm text-muted-foreground">
-            Exploring Q1 2025 SDWIS data for Georgia's public water systems
+            Exploring Q1 2025 SDWIS data for Georgia&apos;s public water systems
           </p>
         </div>
 
@@ -111,7 +97,7 @@ export default function Home() {
               Database Schema Overview
             </CardTitle>
             <CardDescription>
-              Explore the structure of Georgia's Safe Drinking Water Information System data
+              Explore the structure of Georgia&apos;s Safe Drinking Water Information System data
             </CardDescription>
           </CardHeader>
           <CardContent>

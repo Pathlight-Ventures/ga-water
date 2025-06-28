@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
-import { PublicWaterSystem, Violation, Facility, SiteVisit, LeadCopperSample, GeographicArea, ReferenceCode } from '@/types/database'
+import { createSupabaseClient } from '@/lib/supabase/client'
 
 export interface ImportResult {
   success: boolean
@@ -14,7 +13,7 @@ export interface CSVRow {
 }
 
 export class DataImporter {
-  private supabase = createClient()
+  private supabase = createSupabaseClient()
 
   /**
    * Import water systems data from CSV
@@ -293,7 +292,7 @@ export class DataImporter {
   /**
    * Parse date string to ISO format
    */
-  private parseDate(dateStr: any): string | null {
+  private parseDate(dateStr: string | number | null): string | null {
     if (!dateStr) return null
     
     const str = String(dateStr).trim()
@@ -327,7 +326,7 @@ export class DataImporter {
   /**
    * Parse number string to number
    */
-  private parseNumber(numStr: any): number | null {
+  private parseNumber(numStr: string | number | null): number | null {
     if (!numStr) return null
     
     const num = Number(numStr)

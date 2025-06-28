@@ -1,5 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
-import type { Database } from '@/types/database'
+import { createSupabaseClient } from '@/lib/supabase/client'
 
 export interface WaterSystem {
   id: string
@@ -63,7 +62,7 @@ export interface SearchFilters {
 }
 
 export class WaterSystemsRepository {
-  private supabase = createClient()
+  private supabase = createSupabaseClient()
 
   /**
    * Get a water system by PWSID

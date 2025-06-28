@@ -17,6 +17,92 @@ CREATE TYPE facility_type_enum AS ENUM ('CC', 'CH', 'CS', 'CW', 'DS', 'IG', 'IN'
 CREATE TYPE submission_status_enum AS ENUM ('Y', 'U', 'R');
 CREATE TYPE enforcement_category_enum AS ENUM ('Formal', 'Informal', 'Resolving');
 
+-- =====================================================
+-- AUTHENTICATION AND ROLE-BASED ACCESS CONTROL
+-- =====================================================
+
+-- User roles enum
+CREATE TYPE user_role_enum AS ENUM (
+    'public',           -- General public access (read-only)
+    'operator',         -- Water system operators
+    'laboratory',       -- Laboratory staff
+    'epd_staff',        -- EPD staff
+    'epa_staff',        -- EPA staff
+    'admin'             -- System administrators
+);
+
+-- User permissions enum
+CREATE TYPE permission_enum AS ENUM (
+    'read_public_data',     -- Read public water system data
+    'read_operator_data',   -- Read operator-specific data
+    'read_lab_data',        -- Read laboratory data
+    'read_epd_data',        -- Read EPD internal data
+    'read_epa_data',        -- Read EPA data
+    'write_operator_data',  -- Write operator data
+    'write_lab_data',       -- Write laboratory data
+    'write_epd_data',       -- Write EPD data
+    'write_epa_data',       -- Write EPA data
+    'export_data',          -- Export data
+    'import_data',          -- Import data
+    'manage_users',         -- Manage user accounts
+    'view_analytics',       -- View analytics
+    'manage_system'         -- System administration
+);
+
+-- User profiles table (extends Supabase auth.users)
+CREATE TABLE user_profiles (
+    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255),
+    organization VARCHAR(255),
+    role user_role_enum DEFAULT 'public',
+    pwsid VARCHAR(9), -- For operators, link to their water system
+    phone VARCHAR(20),
+    address TEXT,
+    is_active BOOLEAN DEFAULT true,
+    last_login TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Role permissions mapping
+CREATE TABLE role_permissions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    role user_role_enum NOT NULL,
+    permission permission_enum NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(role, permission)
+);
+
+-- User sessions for tracking
+CREATE TABLE user_sessions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    session_token VARCHAR(255) NOT NULL,
+    ip_address INET,
+    user_agent TEXT,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Audit log for sensitive operations
+CREATE TABLE audit_log (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    action VARCHAR(100) NOT NULL,
+    table_name VARCHAR(100),
+    record_id UUID,
+    old_values JSONB,
+    new_values JSONB,
+    ip_address INET,
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- =====================================================
+-- DATA TABLES
+-- =====================================================
+
 -- Public Water Systems table (updated with all fields from CSV)
 CREATE TABLE public_water_systems (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -369,4 +455,192 @@ CREATE POLICY "Allow public read access to service_areas" ON service_areas FOR S
 CREATE POLICY "Allow public read access to events_milestones" ON events_milestones FOR SELECT USING (true);
 CREATE POLICY "Allow public read access to public_notice_violations" ON public_notice_violations FOR SELECT USING (true);
 CREATE POLICY "Allow public read access to reference_codes" ON reference_codes FOR SELECT USING (true);
-CREATE POLICY "Allow public read access to ansi_areas" ON ansi_areas FOR SELECT USING (true); 
+CREATE POLICY "Allow public read access to ansi_areas" ON ansi_areas FOR SELECT USING (true);
+
+-- =====================================================
+-- ROW LEVEL SECURITY (RLS) POLICIES
+-- =====================================================
+
+-- Enable RLS on all tables
+ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public_water_systems ENABLE ROW LEVEL SECURITY;
+ALTER TABLE violations_enforcement ENABLE ROW LEVEL SECURITY;
+ALTER TABLE facilities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_visits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lead_copper_samples ENABLE ROW LEVEL SECURITY;
+ALTER TABLE geographic_areas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE service_areas ENABLE ROW LEVEL SECURITY;
+ALTER TABLE events_milestones ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public_notice_violations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reference_codes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ansi_areas ENABLE ROW LEVEL SECURITY;
+
+-- User profiles policies
+CREATE POLICY "Users can view their own profile" ON user_profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" ON user_profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Admins can view all profiles" ON user_profiles
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM user_profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- Role permissions policies (read-only for authenticated users)
+CREATE POLICY "Authenticated users can view role permissions" ON role_permissions
+    FOR SELECT USING (auth.role() = 'authenticated');
+
+-- Public water systems policies (public read access)
+CREATE POLICY "Public read access to water systems" ON public_water_systems
+    FOR SELECT USING (true);
+
+-- Violations policies (public read access)
+CREATE POLICY "Public read access to violations" ON violations_enforcement
+    FOR SELECT USING (true);
+
+-- Facilities policies (public read access)
+CREATE POLICY "Public read access to facilities" ON facilities
+    FOR SELECT USING (true);
+
+-- Site visits policies (public read access)
+CREATE POLICY "Public read access to site visits" ON site_visits
+    FOR SELECT USING (true);
+
+-- Lead copper samples policies (public read access)
+CREATE POLICY "Public read access to lead copper samples" ON lead_copper_samples
+    FOR SELECT USING (true);
+
+-- Geographic areas policies (public read access)
+CREATE POLICY "Public read access to geographic areas" ON geographic_areas
+    FOR SELECT USING (true);
+
+-- Service areas policies (public read access)
+CREATE POLICY "Public read access to service areas" ON service_areas
+    FOR SELECT USING (true);
+
+-- Events milestones policies (public read access)
+CREATE POLICY "Public read access to events milestones" ON events_milestones
+    FOR SELECT USING (true);
+
+-- Public notice violations policies (public read access)
+CREATE POLICY "Public read access to public notice violations" ON public_notice_violations
+    FOR SELECT USING (true);
+
+-- Reference codes policies (public read access)
+CREATE POLICY "Public read access to reference codes" ON reference_codes
+    FOR SELECT USING (true);
+
+-- ANSI areas policies (public read access)
+CREATE POLICY "Public read access to ansi areas" ON ansi_areas
+    FOR SELECT USING (true);
+
+-- Audit log policies (admin only)
+CREATE POLICY "Only admins can view audit log" ON audit_log
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM user_profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- User sessions policies (users can view their own sessions)
+CREATE POLICY "Users can view their own sessions" ON user_sessions
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own sessions" ON user_sessions
+    FOR DELETE USING (auth.uid() = user_id);
+
+-- =====================================================
+-- DEFAULT ROLE PERMISSIONS
+-- =====================================================
+
+-- Public role permissions (read-only access to public data)
+INSERT INTO role_permissions (role, permission) VALUES
+('public', 'read_public_data');
+
+-- Operator role permissions
+INSERT INTO role_permissions (role, permission) VALUES
+('operator', 'read_public_data'),
+('operator', 'read_operator_data'),
+('operator', 'write_operator_data'),
+('operator', 'export_data'),
+('operator', 'view_analytics');
+
+-- Laboratory role permissions
+INSERT INTO role_permissions (role, permission) VALUES
+('laboratory', 'read_public_data'),
+('laboratory', 'read_lab_data'),
+('laboratory', 'write_lab_data'),
+('laboratory', 'export_data'),
+('laboratory', 'view_analytics');
+
+-- EPD staff role permissions
+INSERT INTO role_permissions (role, permission) VALUES
+('epd_staff', 'read_public_data'),
+('epd_staff', 'read_operator_data'),
+('epd_staff', 'read_lab_data'),
+('epd_staff', 'read_epd_data'),
+('epd_staff', 'write_epd_data'),
+('epd_staff', 'export_data'),
+('epd_staff', 'import_data'),
+('epd_staff', 'view_analytics');
+
+-- EPA staff role permissions
+INSERT INTO role_permissions (role, permission) VALUES
+('epa_staff', 'read_public_data'),
+('epa_staff', 'read_operator_data'),
+('epa_staff', 'read_lab_data'),
+('epa_staff', 'read_epd_data'),
+('epa_staff', 'read_epa_data'),
+('epa_staff', 'write_epa_data'),
+('epa_staff', 'export_data'),
+('epa_staff', 'view_analytics');
+
+-- Admin role permissions (full access)
+INSERT INTO role_permissions (role, permission) VALUES
+('admin', 'read_public_data'),
+('admin', 'read_operator_data'),
+('admin', 'read_lab_data'),
+('admin', 'read_epd_data'),
+('admin', 'read_epa_data'),
+('admin', 'write_operator_data'),
+('admin', 'write_lab_data'),
+('admin', 'write_epd_data'),
+('admin', 'write_epa_data'),
+('admin', 'export_data'),
+('admin', 'import_data'),
+('admin', 'manage_users'),
+('admin', 'view_analytics'),
+('admin', 'manage_system');
+
+-- =====================================================
+-- INDEXES FOR AUTHENTICATION TABLES
+-- =====================================================
+
+-- User profiles indexes
+CREATE INDEX idx_user_profiles_email ON user_profiles(email);
+CREATE INDEX idx_user_profiles_role ON user_profiles(role);
+CREATE INDEX idx_user_profiles_pwsid ON user_profiles(pwsid);
+CREATE INDEX idx_user_profiles_active ON user_profiles(is_active);
+
+-- Role permissions indexes
+CREATE INDEX idx_role_permissions_role ON role_permissions(role);
+CREATE INDEX idx_role_permissions_permission ON role_permissions(permission);
+
+-- User sessions indexes
+CREATE INDEX idx_user_sessions_user_id ON user_sessions(user_id);
+CREATE INDEX idx_user_sessions_token ON user_sessions(session_token);
+CREATE INDEX idx_user_sessions_expires ON user_sessions(expires_at);
+
+-- Audit log indexes
+CREATE INDEX idx_audit_log_user_id ON audit_log(user_id);
+CREATE INDEX idx_audit_log_action ON audit_log(action);
+CREATE INDEX idx_audit_log_table_name ON audit_log(table_name);
+CREATE INDEX idx_audit_log_created_at ON audit_log(created_at); 

@@ -73,7 +73,7 @@ export default function SearchPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Search Water Systems</h1>
           <p className="text-muted-foreground">
-            Find and explore Georgia's public water systems and their compliance data
+            Find and explore Georgia&apos;s public water systems and their compliance data
           </p>
         </div>
 
