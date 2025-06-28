@@ -157,9 +157,15 @@ This application uses Q1 2025 SDWIS data for the state of Georgia, including:
    Then edit `.env.local` with your Supabase credentials:
 
    ```bash
+   # Client-side keys (safe to be public - protected by Row Level Security)
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   
+   # Server-side only (NEVER expose to client - bypasses RLS)
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
    ```
+
+   **Security Note**: The `NEXT_PUBLIC_` prefix is required for client-side Supabase operations. These keys are safe to be public because they're protected by Row Level Security (RLS) policies in your database.
 
 4. **Set up Supabase**
    - Create a new Supabase project
