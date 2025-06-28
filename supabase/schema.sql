@@ -1,9 +1,6 @@
 -- Updated Supabase Schema for SDWIS Data
 -- Based on actual CSV structure from Georgia Q1 2025 data
 
--- Enable Row Level Security
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
-
 -- Create custom types for better data integrity
 CREATE TYPE pws_type_enum AS ENUM ('CWS', 'TNCWS', 'NTNCWS');
 CREATE TYPE pws_activity_enum AS ENUM ('A', 'I', 'N', 'M', 'P');

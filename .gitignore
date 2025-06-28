@@ -40,3 +40,4 @@ env.example
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+node_modules/
