@@ -454,7 +454,7 @@ export default function ReportsPage() {
                   <div className="min-w-0 flex-1">
                     <CardTitle className="break-words">Historical Data Viewing</CardTitle>
                     <CardDescription className="break-words">
-                      View reports and data from the past 4 years
+                      View reports and data from the past 12 years
                     </CardDescription>
                   </div>
                   <Button onClick={handleExcelDownload} className="shrink-0 w-full sm:w-auto">
@@ -474,6 +474,15 @@ export default function ReportsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          
+                          <SelectItem value="2013">2013</SelectItem>
+                          <SelectItem value="2014">2014</SelectItem>
+                          <SelectItem value="2015">2015</SelectItem>
+                          <SelectItem value="2016">2016</SelectItem>
+                          <SelectItem value="2017">2017</SelectItem>
+                          <SelectItem value="2018">2018</SelectItem>
+                          <SelectItem value="2019">2019</SelectItem>
+                          <SelectItem value="2020">2020</SelectItem>
                           <SelectItem value="2021">2021</SelectItem>
                           <SelectItem value="2022">2022</SelectItem>
                           <SelectItem value="2023">2023</SelectItem>
@@ -489,6 +498,14 @@ export default function ReportsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="2013">2013</SelectItem>
+                          <SelectItem value="2014">2014</SelectItem>
+                          <SelectItem value="2015">2015</SelectItem>
+                          <SelectItem value="2016">2016</SelectItem>
+                          <SelectItem value="2017">2017</SelectItem>
+                          <SelectItem value="2018">2018</SelectItem>
+                          <SelectItem value="2019">2019</SelectItem>
+                          <SelectItem value="2020">2020</SelectItem>
                           <SelectItem value="2021">2021</SelectItem>
                           <SelectItem value="2022">2022</SelectItem>
                           <SelectItem value="2023">2023</SelectItem>
