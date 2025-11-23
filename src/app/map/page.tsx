@@ -382,12 +382,14 @@ export default function MapPage() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-0 h-full">
-                <MapComponent 
-                  searchResults={searchResults}
-                  selectedSystem={selectedSystem}
-                  onSystemSelect={handleSystemSelect}
-                />
+              <CardContent className="p-0" style={{ height: 'calc(100% - 80px)', minHeight: '500px' }}>
+                <div className="h-full w-full">
+                  <MapComponent 
+                    searchResults={searchResults}
+                    selectedSystem={selectedSystem}
+                    onSystemSelect={handleSystemSelect}
+                  />
+                </div>
               </CardContent>
             </Card>
 

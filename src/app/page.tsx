@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { ChevronDown, MessageCircle, MapPin, Building2, Activity } from 'lucide-react'
+import { ChevronDown, MessageCircle, MapPin, Building2 } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
@@ -116,31 +116,12 @@ export default function Home() {
     <main className="min-h-screen bg-[#FCFCFC] flex flex-col">
       {/* Main Content */}
       <section className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-        {isAuthenticated && isApproved ? (
-          <>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 text-center mb-4 leading-tight">
-              Welcome to the Compliance Portal
-            </h1>
-            <p className="text-lg text-gray-600 text-center mb-8 max-w-xl">
-              Access your dashboard, reports, and compliance tools.
-            </p>
-            <Link href="/dashboard">
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-6 text-lg">
-                <Activity className="w-5 h-5 mr-2" />
-                Go to Dashboard
-              </Button>
-            </Link>
-          </>
-        ) : (
-          <>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 text-center mb-4 leading-tight">
-              Check Your Water Quality
-            </h1>
-            <p className="text-lg text-gray-600 text-center mb-8 max-w-xl">
-              Enter your address to find water quality data for your area.
-            </p>
-          </>
-        )}
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 text-center mb-4 leading-tight">
+          Check Your Water Quality
+        </h1>
+        <p className="text-lg text-gray-600 text-center mb-8 max-w-xl">
+          Enter your address to find water quality data for your area.
+        </p>
 
         <Card className="w-full max-w-2xl mx-auto p-6 rounded-2xl shadow-sm">
           {/* Search Mode Toggle */}

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -124,6 +125,9 @@
 /* Leaflet Map Styles */
 .leaflet-container {
   font-family: inherit;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
 }
 
 .leaflet-popup-content-wrapper {

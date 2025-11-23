@@ -27,11 +27,17 @@ export function Navigation() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isPartnerToolsOpen, setIsPartnerToolsOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const partnerToolsRef = useRef<HTMLDivElement>(null)
   const profileMenuRef = useRef<HTMLDivElement>(null)
   const isPartnerToolsOpenRef = useRef(false)
   const isProfileMenuOpenRef = useRef(false)
   const { user, isAuthenticated, isAdmin, isApproved, profile, signOut } = useAuth()
+
+  // Ensure component is mounted before rendering auth-dependent UI
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -127,7 +133,7 @@ export function Navigation() {
             })}
 
             {/* Partner Tools Dropdown - only for authenticated users */}
-            {isAuthenticated && isApproved && (
+            {mounted && isAuthenticated && isApproved && (
               <div className="relative" ref={partnerToolsRef}>
                 <Button
                   variant="ghost"
@@ -166,7 +172,14 @@ export function Navigation() {
             )}
 
             <HelpGuide />
-            {isAuthenticated && isApproved ? (
+            {!mounted ? (
+              // Render placeholder during SSR to match client initial render
+              <div className="ml-4">
+                <Button variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600" asChild>
+                  <Link href="/auth/login">Partner Login</Link>
+                </Button>
+              </div>
+            ) : isAuthenticated && isApproved ? (
               <div className="flex items-center gap-2 ml-4">
                 {/* Profile Icon Dropdown */}
                 <div className="relative" ref={profileMenuRef}>
@@ -287,7 +300,11 @@ export function Navigation() {
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
-            {isAuthenticated ? (
+            {!mounted ? (
+              <Button variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600" asChild>
+                <Link href="/auth/login">Partner Login</Link>
+              </Button>
+            ) : isAuthenticated ? (
               <Button 
                 variant="outline" 
                 size="sm"
@@ -338,7 +355,7 @@ export function Navigation() {
             })}
 
             {/* Partner Tools - only for authenticated users */}
-            {isAuthenticated && isApproved && (
+            {mounted && isAuthenticated && isApproved && (
               <>
                 <div className="px-3 py-2 border-t border-gray-200 mt-2">
                   <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Partner Tools</div>
@@ -368,7 +385,7 @@ export function Navigation() {
             )}
 
             {/* Profile Section for Mobile - only for authenticated and approved users */}
-            {isAuthenticated && isApproved && (
+            {mounted && isAuthenticated && isApproved && (
               <div className="px-3 py-2 border-t border-gray-200 mt-2">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
@@ -419,7 +436,7 @@ export function Navigation() {
             <div className="px-3 py-2">
               <HelpGuide />
             </div>
-            {isAuthenticated && (
+            {mounted && isAuthenticated && (
               <div className="px-3 py-2 border-t border-gray-200 mt-2">
                 <p className="text-sm text-gray-600 mb-1">Welcome, {user?.email}</p>
                 {profile && (

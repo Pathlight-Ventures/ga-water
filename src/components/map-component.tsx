@@ -157,6 +157,21 @@ function MapUpdater({ selectedSystem }: { selectedSystem: WaterSystemSearchResul
   return null
 }
 
+// Component to handle map ready state and size invalidation
+function MapReadyHandler({ onReady }: { onReady: () => void }) {
+  const map = useMap()
+
+  useEffect(() => {
+    onReady()
+    // Invalidate size to ensure proper rendering
+    setTimeout(() => {
+      map.invalidateSize()
+    }, 100)
+  }, [map, onReady])
+
+  return null
+}
+
 // Generate coordinates based on county and system data
 const generateCoordinates = (system: WaterSystemSearchResult): [number, number] => {
   // Try to find county coordinates first
@@ -185,9 +200,15 @@ const generateCoordinates = (system: WaterSystemSearchResult): [number, number] 
 
 export default function MapComponent({ searchResults, selectedSystem, onSystemSelect }: MapComponentProps) {
   const [mapReady, setMapReady] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   // Georgia center coordinates
   const georgiaCenter: [number, number] = [32.1656, -82.9001]
+
+  // Ensure component is mounted before rendering map
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const getMarkerIcon = (system: WaterSystemSearchResult) => {
     if (system.violation_count === 0) return greenIcon
@@ -216,37 +237,36 @@ export default function MapComponent({ searchResults, selectedSystem, onSystemSe
     return num.toLocaleString()
   }
 
-  if (searchResults.length === 0) {
+  if (!mounted) {
     return (
-      <div className="h-full w-full bg-gray-50 rounded-lg flex items-center justify-center">
+      <div className="h-full w-full bg-gray-100 rounded-lg flex items-center justify-center" style={{ minHeight: '500px' }}>
         <div className="text-center">
           <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-600 mb-2">No Water Systems Found</h3>
-          <p className="text-gray-500">
-            Search for water systems to see them on the map
-          </p>
+          <h3 className="text-lg font-semibold text-gray-600 mb-2">Loading Map...</h3>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full relative" style={{ minHeight: '500px', height: '100%' }}>
       <MapContainer
         center={georgiaCenter}
         zoom={7}
-        className="h-full w-full"
-        whenReady={() => setMapReady(true)}
+        className="h-full w-full z-0"
+        style={{ height: '100%', width: '100%', minHeight: '500px' }}
+        scrollWheelZoom={true}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
+        <MapReadyHandler onReady={() => setMapReady(true)} />
         <MapUpdater selectedSystem={selectedSystem} />
 
         {/* Render markers for search results */}
-        {mapReady && searchResults.map((system) => {
+        {mapReady && searchResults.length > 0 && searchResults.map((system) => {
           const coordinates = generateCoordinates(system)
           const markerKey = `${system.id}-${coordinates[0]}-${coordinates[1]}`
           
@@ -356,6 +376,16 @@ export default function MapComponent({ searchResults, selectedSystem, onSystemSe
           )
         })()}
       </MapContainer>
+      
+      {/* Overlay message when no search results */}
+      {searchResults.length === 0 && mapReady && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-gray-200">
+          <div className="flex items-center gap-2 text-sm text-gray-700">
+            <MapPin className="w-4 h-4 text-gray-500" />
+            <span>Search for water systems to see them on the map</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 
