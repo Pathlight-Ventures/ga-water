@@ -215,7 +215,7 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Agency Dashboard</h1>
           <p className="text-gray-600">
@@ -279,16 +279,16 @@ export default function DashboardPage() {
               {mockMetrics.map(metric => (
                 <div
                   key={metric.id}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md min-w-0 ${
                     selectedMetric === metric.id 
                       ? 'border-orange-500 bg-orange-50' 
                       : getStatusColor(metric.status)
                   }`}
                   onClick={() => setSelectedMetric(selectedMetric === metric.id ? null : metric.id)}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium mb-1">{metric.label}</p>
+                  <div className="flex items-start justify-between mb-2 gap-2 min-w-0">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium mb-1 break-words">{metric.label}</p>
                       <div className="flex items-center gap-2">
                         <p className="text-2xl font-bold">{metric.value}</p>
                         {metric.percentage && (
@@ -321,17 +321,18 @@ export default function DashboardPage() {
         {/* Exceedance Details */}
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Water Systems with Exceedance of Monitored Parameters</CardTitle>
-                <CardDescription>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="break-words">Water Systems with Exceedance of Monitored Parameters</CardTitle>
+                <CardDescription className="break-words">
                   Detailed view of systems requiring follow-up action
                 </CardDescription>
               </div>
-              <Link href="/compliance">
-                <Button variant="outline">
-                  <Filter className="w-4 h-4 mr-2" />
-                  View All
+              <Link href="/compliance" className="shrink-0">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                  <Filter className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">View All</span>
+                  <span className="sm:hidden">All</span>
                 </Button>
               </Link>
             </div>
@@ -341,10 +342,10 @@ export default function DashboardPage() {
               {mockExceedanceDetails.map(detail => (
                 <div
                   key={detail.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3 min-w-0"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg ${
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className={`p-3 rounded-lg shrink-0 ${
                       detail.measuredValue > detail.limit 
                         ? 'bg-red-100' 
                         : 'bg-yellow-100'
@@ -355,14 +356,14 @@ export default function DashboardPage() {
                           : 'text-yellow-600'
                       }`} />
                     </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">{detail.systemName}</h4>
-                      <p className="text-sm text-gray-600">{detail.parameter}</p>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-medium text-gray-900 truncate">{detail.systemName}</h4>
+                      <p className="text-sm text-gray-600 break-words">{detail.parameter}</p>
                       <p className="text-xs text-gray-500 mt-1">Date: {detail.date}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-2">
+                  <div className="text-left sm:text-right shrink-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-lg font-bold ${
                         detail.measuredValue > detail.limit 
                           ? 'text-red-600' 

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ResponsiveTabs, ResponsiveTabsContent, ResponsiveTabsList, ResponsiveTabsTrigger } from '@/components/ui/responsive-tabs'
 import { 
   User, 
   Bell, 
@@ -48,36 +48,36 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Settings</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Configure your preferences and application settings
           </p>
         </div>
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
+        <ResponsiveTabs defaultValue="profile">
+          <ResponsiveTabsList>
+            <ResponsiveTabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Profile
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
+            </ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="notifications" className="flex items-center gap-2">
               <Bell className="w-4 h-4" />
               Notifications
-            </TabsTrigger>
-            <TabsTrigger value="appearance" className="flex items-center gap-2">
+            </ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="appearance" className="flex items-center gap-2">
               <Palette className="w-4 h-4" />
               Appearance
-            </TabsTrigger>
-            <TabsTrigger value="data" className="flex items-center gap-2">
+            </ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="data" className="flex items-center gap-2">
               <Database className="w-4 h-4" />
               Data
-            </TabsTrigger>
-          </TabsList>
+            </ResponsiveTabsTrigger>
+          </ResponsiveTabsList>
 
-          <TabsContent value="profile" className="space-y-6">
+          <ResponsiveTabsContent value="profile" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -137,9 +137,9 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="notifications" className="space-y-6">
+          <ResponsiveTabsContent value="notifications" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -178,9 +178,9 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="appearance" className="space-y-6">
+          <ResponsiveTabsContent value="appearance" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -199,7 +199,7 @@ export default function SettingsPage() {
                       <p className="text-sm text-gray-600">Choose your preferred theme</p>
                     </div>
                     <Select defaultValue="light">
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-full sm:w-auto min-w-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -216,7 +216,7 @@ export default function SettingsPage() {
                       <p className="text-sm text-gray-600">Adjust text size for better readability</p>
                     </div>
                     <Select defaultValue="medium">
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-full sm:w-auto min-w-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -229,9 +229,9 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="data" className="space-y-6">
+          <ResponsiveTabsContent value="data" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -276,8 +276,8 @@ export default function SettingsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </ResponsiveTabsContent>
+        </ResponsiveTabs>
       </div>
     </main>
   )

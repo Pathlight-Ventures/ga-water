@@ -177,7 +177,7 @@ export default function FacilityRegistrationPage() {
       case 0: // User Information
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name *</Label>
                 <Input
@@ -226,7 +226,7 @@ export default function FacilityRegistrationPage() {
                 placeholder="(404) 555-1234"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="role">Role *</Label>
                 <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
@@ -287,7 +287,7 @@ export default function FacilityRegistrationPage() {
               <p className="text-sm text-gray-600 mb-4">
                 Water System ID and Plant Number will be validated against SDWIS database to ensure accuracy.
               </p>
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div className="space-y-2">
                   <Label htmlFor="waterSystemId">Water System ID *</Label>
                   <Input
@@ -361,7 +361,7 @@ export default function FacilityRegistrationPage() {
                 <p className="text-xs text-red-600">{validationErrors.permittedCapacity}</p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="groundWaterWithdrawal24hr">Ground Water Withdrawal - 24hr Limit (gallons/day)</Label>
                 <Input
@@ -383,7 +383,7 @@ export default function FacilityRegistrationPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="surfaceWaterWithdrawal24hr">Surface Water Withdrawal - 24hr Limit (gallons/day)</Label>
                 <Input
@@ -421,7 +421,7 @@ export default function FacilityRegistrationPage() {
                 placeholder="4"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="individualFilterArea">Individual Filter Area (sq ft)</Label>
                 <Input
@@ -445,7 +445,7 @@ export default function FacilityRegistrationPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="permitLimitFiltrationRate">Permit Limit - Filtration Rate (gpm/sq ft)</Label>
                 <Input
@@ -516,7 +516,7 @@ export default function FacilityRegistrationPage() {
                 placeholder="123 Main Street"
               />
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">City</Label>
                 <Input
@@ -554,7 +554,7 @@ export default function FacilityRegistrationPage() {
                 placeholder="Fulton"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="latitude">Latitude</Label>
                 <Input
@@ -587,7 +587,7 @@ export default function FacilityRegistrationPage() {
             <div className="p-4 border rounded-lg bg-gray-50">
               <h3 className="font-semibold mb-4">Review Your Information</h3>
               <div className="space-y-3 text-sm">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-gray-600">Name:</p>
                     <p className="font-medium">{formData.firstName} {formData.lastName}</p>
@@ -630,10 +630,10 @@ export default function FacilityRegistrationPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Facility & System Registration</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Facility & System Registration</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Register your water system facility and create an account to submit data
           </p>
         </div>
@@ -641,7 +641,7 @@ export default function FacilityRegistrationPage() {
         {/* Progress Steps */}
         <Card className="mb-6">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+            <div className="hidden sm:flex items-center justify-between">
               {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center flex-1">
                   <div className="flex flex-col items-center">
@@ -658,7 +658,7 @@ export default function FacilityRegistrationPage() {
                         <span>{index + 1}</span>
                       )}
                     </div>
-                    <p className="text-xs mt-2 text-center max-w-[80px]">{step.title}</p>
+                    <p className="text-xs mt-2 text-center max-w-[80px] truncate">{step.title}</p>
                   </div>
                   {index < steps.length - 1 && (
                     <div className={`flex-1 h-1 mx-2 ${
@@ -667,6 +667,12 @@ export default function FacilityRegistrationPage() {
                   )}
                 </div>
               ))}
+            </div>
+            {/* Mobile: Simple step indicator */}
+            <div className="sm:hidden flex items-center justify-center gap-2">
+              <span className="text-sm font-medium">Step {currentStep + 1} of {steps.length}</span>
+              <span className="text-gray-400">•</span>
+              <span className="text-sm text-gray-600 truncate">{steps[currentStep].title}</span>
             </div>
           </CardContent>
         </Card>
@@ -680,20 +686,21 @@ export default function FacilityRegistrationPage() {
           <CardContent>
             {renderStepContent()}
           </CardContent>
-          <CardContent className="flex justify-between pt-6 border-t">
+          <CardContent className="flex flex-col sm:flex-row justify-between gap-3 pt-6 border-t">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 0}
+              className="w-full sm:w-auto order-2 sm:order-1"
             >
               Previous
             </Button>
             {currentStep < steps.length - 1 ? (
-              <Button onClick={handleNext}>
+              <Button onClick={handleNext} className="w-full sm:w-auto order-1 sm:order-2">
                 Next
               </Button>
             ) : (
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700">
+              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 w-full sm:w-auto order-1 sm:order-2">
                 Submit Registration
               </Button>
             )}

@@ -113,10 +113,10 @@ export default function DataExchangePage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Data Exchange / Data Sharing</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Data Exchange / Data Sharing</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Export data to SDWIS and other external systems
           </p>
         </div>
@@ -232,17 +232,18 @@ export default function DataExchangePage() {
 
         <Card className="mb-6">
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Labworks Integration</CardTitle>
-                <CardDescription>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="break-words">Labworks Integration</CardTitle>
+                <CardDescription className="break-words">
                   Import and export data with Labworks Laboratory Information System
                 </CardDescription>
               </div>
-              <Link href="/data-exchange/labworks">
-                <Button variant="outline">
-                  <Database className="w-4 h-4 mr-2" />
-                  Manage Labworks Integration
+              <Link href="/data-exchange/labworks" className="shrink-0 w-full sm:w-auto">
+                <Button variant="outline" className="w-full sm:w-auto">
+                  <Database className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Manage Labworks Integration</span>
+                  <span className="sm:hidden">Labworks</span>
                 </Button>
               </Link>
             </div>
@@ -258,21 +259,21 @@ export default function DataExchangePage() {
 
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Export History</CardTitle>
-                <CardDescription>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="break-words">Export History</CardTitle>
+                <CardDescription className="break-words">
                   View past SDWIS exports
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row gap-2 min-w-0">
+                <div className="relative flex-1 min-w-0">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Search exports..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
+                    className="pl-10 w-full min-w-0"
                   />
                 </div>
               </div>
@@ -288,13 +289,13 @@ export default function DataExchangePage() {
                 filteredExports.map(exp => (
                   <div
                     key={exp.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3 min-w-0"
                   >
-                    <div className="flex items-center gap-4">
-                      <FileSpreadsheet className="w-8 h-8 text-green-600" />
-                      <div>
-                        <h4 className="font-medium">{exp.fileName}</h4>
-                        <div className="flex gap-4 text-sm text-gray-600 mt-1">
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className="shrink-0"><FileSpreadsheet className="w-8 h-8 text-green-600" /></div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-medium truncate">{exp.fileName}</h4>
+                        <div className="flex flex-wrap gap-2 text-sm text-gray-600 mt-1">
                           <span>{exp.month} {exp.year}</span>
                           <span>•</span>
                           <span>{exp.waterSystems}</span>
@@ -308,15 +309,16 @@ export default function DataExchangePage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {getStatusBadge(exp.status)}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="shrink-0">{getStatusBadge(exp.status)}</div>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleDownload(exp.id)}
+                        className="px-3 sm:px-4"
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
+                        <Download className="w-4 h-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Download</span>
                       </Button>
                     </div>
                   </div>

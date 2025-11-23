@@ -194,7 +194,7 @@ export default function CompliancePage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Compliance Tracking</h1>
           <p className="text-gray-600">
@@ -255,12 +255,12 @@ export default function CompliancePage() {
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="mcls">MCL Management</TabsTrigger>
-            <TabsTrigger value="exceedances">MCL Exceedances</TabsTrigger>
-            <TabsTrigger value="non-submissions">Non-Submissions</TabsTrigger>
-            <TabsTrigger value="deadlines">Deadlines</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-1 overflow-x-auto">
+            <TabsTrigger value="dashboard" className="text-xs sm:text-sm">Dashboard</TabsTrigger>
+            <TabsTrigger value="mcls" className="text-xs sm:text-sm">MCLs</TabsTrigger>
+            <TabsTrigger value="exceedances" className="text-xs sm:text-sm">Exceedances</TabsTrigger>
+            <TabsTrigger value="non-submissions" className="text-xs sm:text-sm">Non-Submissions</TabsTrigger>
+            <TabsTrigger value="deadlines" className="text-xs sm:text-sm">Deadlines</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard" className="space-y-6">
@@ -280,7 +280,7 @@ export default function CompliancePage() {
                   <div className="w-full bg-gray-200 rounded-full h-4">
                     <div className="bg-green-600 h-4 rounded-full" style={{ width: '92.5%' }}></div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                     <div>
                       <p className="text-sm text-gray-600">Systems with Violations</p>
                       <p className="text-xl font-bold">8</p>
@@ -298,16 +298,17 @@ export default function CompliancePage() {
           <TabsContent value="mcls" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Maximum Contaminant Levels (MCLs)</CardTitle>
-                    <CardDescription>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="break-words">Maximum Contaminant Levels (MCLs)</CardTitle>
+                    <CardDescription className="break-words">
                       Configure MCLs for parameters
                     </CardDescription>
                   </div>
-                  <Button onClick={() => setShowMCLForm(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add MCL
+                  <Button onClick={() => setShowMCLForm(true)} size="sm" className="shrink-0 w-full sm:w-auto">
+                    <Plus className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Add MCL</span>
+                    <span className="sm:hidden">Add</span>
                   </Button>
                 </div>
               </CardHeader>
@@ -318,7 +319,7 @@ export default function CompliancePage() {
                       <CardTitle>Add New MCL</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="parameter">Parameter *</Label>
                           <Input
@@ -415,7 +416,7 @@ export default function CompliancePage() {
                         </div>
                         {getStatusBadge(exceedance.status)}
                       </div>
-                      <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                         <div>
                           <p className="text-sm text-gray-600">Measured Value</p>
                           <p className="text-lg font-bold text-red-600">
@@ -456,7 +457,7 @@ export default function CompliancePage() {
                     </CardDescription>
                   </div>
                   <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-full sm:w-auto min-w-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

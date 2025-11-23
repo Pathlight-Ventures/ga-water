@@ -101,16 +101,17 @@ export function Navigation() {
 
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+        <div className="flex justify-between items-center h-16 gap-2 overflow-hidden">
           {/* Logo and Title */}
-          <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0">
               <span className="inline-block w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="w-4 h-4 bg-orange-500 rounded-full block"></span>
               </span>
-              <span className="font-bold text-lg sm:text-xl text-gray-900 tracking-tight whitespace-nowrap">
-                Georgia Public Water Systems
+              <span className="font-bold text-sm sm:text-lg lg:text-xl text-gray-900 tracking-tight truncate">
+                <span className="hidden min-[375px]:inline">Georgia Public Water Systems</span>
+                <span className="min-[375px]:hidden">GA Water</span>
               </span>
             </Link>
           </div>
@@ -299,30 +300,37 @@ export function Navigation() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="md:hidden flex items-center gap-1.5 flex-shrink-0">
             {!mounted ? (
-              <Button variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600" asChild>
-                <Link href="/auth/login">Partner Login</Link>
+              <Button variant="outline" size="sm" className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600 px-2 sm:px-3" asChild>
+                <Link href="/auth/login">
+                  <span className="hidden sm:inline">Partner Login</span>
+                  <span className="sm:hidden">Login</span>
+                </Link>
               </Button>
             ) : isAuthenticated ? (
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={signOut}
-                className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600"
+                className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600 px-2 sm:px-3"
               >
                 <LogOut className="w-4 h-4" />
-                Sign Out
+                <span className="hidden sm:inline">Sign Out</span>
               </Button>
             ) : (
-              <Button variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600" asChild>
-                <Link href="/auth/login">Partner Login</Link>
+              <Button variant="outline" size="sm" className="border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600 px-2 sm:px-3" asChild>
+                <Link href="/auth/login">
+                  <span className="hidden sm:inline">Partner Login</span>
+                  <span className="sm:hidden">Login</span>
+                </Link>
               </Button>
             )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2"
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5" />

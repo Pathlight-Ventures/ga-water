@@ -142,7 +142,7 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Water Systems Map</h1>
@@ -286,18 +286,18 @@ export default function MapPage() {
                         }`}
                         onClick={() => handleSystemSelect(system)}
                       >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-medium text-sm">{system.pws_name || 'Unnamed System'}</h4>
+                        <div className="flex items-start justify-between mb-2 gap-2 min-w-0">
+                          <h4 className="font-medium text-sm truncate flex-1 min-w-0">{system.pws_name || 'Unnamed System'}</h4>
                           <Badge 
                             variant={system.violation_count > 0 ? "destructive" : "default"}
-                            className="text-xs"
+                            className="text-xs shrink-0"
                           >
-                            {system.violation_count} violations
+                            {system.violation_count}
                           </Badge>
                         </div>
-                        <div className="text-xs text-gray-600 space-y-1">
-                          <p>PWSID: {system.pwsid}</p>
-                          {system.city_name && <p>City: {system.city_name}</p>}
+                        <div className="text-xs text-gray-600 space-y-1 min-w-0">
+                          <p className="truncate">PWSID: {system.pwsid}</p>
+                          {system.city_name && <p className="truncate">City: {system.city_name}</p>}
                           {system.population_served_count && (
                             <p>Population: {system.population_served_count.toLocaleString()}</p>
                           )}
@@ -319,10 +319,10 @@ export default function MapPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-medium">{selectedSystem.pws_name || 'Unnamed System'}</h4>
-                      <p className="text-sm text-gray-600">PWSID: {selectedSystem.pwsid}</p>
+                  <div className="space-y-3 min-w-0">
+                    <div className="min-w-0">
+                      <h4 className="font-medium truncate">{selectedSystem.pws_name || 'Unnamed System'}</h4>
+                      <p className="text-sm text-gray-600 truncate">PWSID: {selectedSystem.pwsid}</p>
                     </div>
                     
                     <div className="space-y-2">
@@ -356,28 +356,31 @@ export default function MapPage() {
           </div>
 
           {/* Map Area */}
-          <div className="lg:col-span-3">
-            <Card className="h-[600px]">
+          <div className="lg:col-span-3 min-w-0">
+            <Card className="h-[500px] sm:h-[600px]">
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Interactive Map</CardTitle>
-                    <CardDescription>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="truncate">Interactive Map</CardTitle>
+                    <CardDescription className="truncate">
                       {selectedSystem 
                         ? `Viewing: ${selectedSystem.pws_name || selectedSystem.pwsid}`
                         : 'Click on a search result to view system details'
                       }
                     </CardDescription>
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                  <div className="flex gap-1 sm:gap-2 flex-wrap">
+                    <Button variant="outline" size="sm" className="p-2">
                       <ZoomIn className="w-4 h-4" />
+                      <span className="hidden sm:inline ml-2">Zoom In</span>
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="p-2">
                       <ZoomOut className="w-4 h-4" />
+                      <span className="hidden sm:inline ml-2">Zoom Out</span>
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="p-2">
                       <Layers className="w-4 h-4" />
+                      <span className="hidden sm:inline ml-2">Layers</span>
                     </Button>
                   </div>
                 </div>

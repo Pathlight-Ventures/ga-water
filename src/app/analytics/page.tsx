@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ResponsiveTabs, ResponsiveTabsContent, ResponsiveTabsList, ResponsiveTabsTrigger } from '@/components/ui/responsive-tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   BarChart3, 
@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
   if (error) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <AlertTriangle className="w-8 h-8 mx-auto mb-4 text-red-600" />
@@ -193,33 +193,33 @@ export default function AnalyticsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
-              <p className="text-muted-foreground">
-                Comprehensive insights into Georgia&apos;s drinking water system performance
-              </p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Analytics Dashboard</h1>
+                <p className="text-sm sm:text-base text-muted-foreground break-words">
+                  Comprehensive insights into Georgia&apos;s drinking water system performance
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2 shrink-0 w-full sm:w-auto">
+                <Select value={timeRange} onValueChange={setTimeRange}>
+                  <SelectTrigger className="w-full sm:w-auto min-w-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="q1-2025">Q1 2025</SelectItem>
+                    <SelectItem value="q4-2024">Q4 2024</SelectItem>
+                    <SelectItem value="q3-2024">Q3 2024</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" className="flex items-center justify-center gap-2 w-full sm:w-auto">
+                  <Download className="w-4 h-4" />
+                  Export
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="q1-2025">Q1 2025</SelectItem>
-                  <SelectItem value="q4-2024">Q4 2024</SelectItem>
-                  <SelectItem value="q3-2024">Q3 2024</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Download className="w-4 h-4" />
-                Export
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* Stats Cards */}
@@ -259,14 +259,14 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Charts and Data */}
-        <Tabs defaultValue="violations" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="violations">Violation Analysis</TabsTrigger>
-            <TabsTrigger value="counties">County Overview</TabsTrigger>
-            <TabsTrigger value="trends">Trends</TabsTrigger>
-          </TabsList>
+        <ResponsiveTabs defaultValue="violations">
+          <ResponsiveTabsList>
+            <ResponsiveTabsTrigger value="violations">Violation Analysis</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="counties">County Overview</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="trends">Trends</ResponsiveTabsTrigger>
+          </ResponsiveTabsList>
 
-          <TabsContent value="violations" className="space-y-6">
+          <ResponsiveTabsContent value="violations" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Violation Categories */}
               <Card>
@@ -317,9 +317,9 @@ export default function AnalyticsPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="counties" className="space-y-6">
+          <ResponsiveTabsContent value="counties" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>County Overview</CardTitle>
@@ -357,9 +357,9 @@ export default function AnalyticsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="trends" className="space-y-6">
+          <ResponsiveTabsContent value="trends" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Compliance Trends</CardTitle>
@@ -395,8 +395,8 @@ export default function AnalyticsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </ResponsiveTabsContent>
+        </ResponsiveTabs>
       </div>
     </main>
   )

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ResponsiveTabs, ResponsiveTabsContent, ResponsiveTabsList, ResponsiveTabsTrigger } from '@/components/ui/responsive-tabs'
 import { Badge } from '@/components/ui/badge'
 import { 
   Bell,
@@ -147,22 +147,22 @@ export default function NotificationsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Notifications</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Send notifications to customers and staff
           </p>
         </div>
 
-        <Tabs defaultValue="inbox" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="inbox">Inbox</TabsTrigger>
-            <TabsTrigger value="send">Send Notification</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-          </TabsList>
+        <ResponsiveTabs defaultValue="inbox">
+          <ResponsiveTabsList>
+            <ResponsiveTabsTrigger value="inbox">Inbox</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="send">Send Notification</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="settings">Settings</ResponsiveTabsTrigger>
+          </ResponsiveTabsList>
 
-          <TabsContent value="inbox" className="space-y-6">
+          <ResponsiveTabsContent value="inbox" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Notification Center</CardTitle>
@@ -172,20 +172,20 @@ export default function NotificationsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex gap-4">
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1 min-w-0">
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
                           placeholder="Search notifications..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 min-w-0"
                         />
                       </div>
                     </div>
                     <Select value={filterType} onValueChange={setFilterType}>
-                      <SelectTrigger className="w-48">
+                      <SelectTrigger className="w-full sm:w-auto min-w-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -208,19 +208,19 @@ export default function NotificationsPage() {
                       filteredNotifications.map(notif => (
                         <div
                           key={notif.id}
-                          className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50"
+                          className="flex items-start gap-4 p-4 border rounded-lg hover:bg-gray-50 min-w-0"
                         >
-                          <div className="mt-1">
+                          <div className="mt-1 shrink-0">
                             {getNotificationIcon(notif.type)}
                           </div>
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-1">
-                              <h4 className="font-medium text-gray-900">{notif.title}</h4>
-                              {getStatusBadge(notif.status)}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between mb-1 gap-2">
+                              <h4 className="font-medium text-gray-900 break-words flex-1">{notif.title}</h4>
+                              <div className="shrink-0">{getStatusBadge(notif.status)}</div>
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">{notif.message}</p>
-                            <div className="flex gap-4 text-xs text-gray-500">
-                              <span>To: {notif.recipient}</span>
+                            <p className="text-sm text-gray-600 mb-2 break-words">{notif.message}</p>
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                              <span className="truncate">To: {notif.recipient}</span>
                               <span>•</span>
                               <span>{notif.sentDate}</span>
                               <span>•</span>
@@ -237,9 +237,9 @@ export default function NotificationsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="send" className="space-y-6">
+          <ResponsiveTabsContent value="send" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Send Notification</CardTitle>
@@ -249,7 +249,7 @@ export default function NotificationsPage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={(e) => { e.preventDefault(); handleSendNotification(); }} className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="recipient">Recipient *</Label>
                       <Select 
@@ -356,9 +356,9 @@ export default function NotificationsPage() {
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="settings" className="space-y-6">
+          <ResponsiveTabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Notification Settings</CardTitle>
@@ -430,8 +430,8 @@ export default function NotificationsPage() {
                 <Button>Save Settings</Button>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </ResponsiveTabsContent>
+        </ResponsiveTabs>
       </div>
     </main>
   )

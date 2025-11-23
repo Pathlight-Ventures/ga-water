@@ -113,21 +113,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#FCFCFC] flex flex-col">
       {/* Main Content */}
-      <section className="flex-1 flex flex-col items-center justify-center px-4 py-12">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 text-center mb-4 leading-tight">
+      <section className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 text-center mb-4 leading-tight px-2">
           Check Your Water Quality
         </h1>
-        <p className="text-lg text-gray-600 text-center mb-8 max-w-xl">
+        <p className="text-base sm:text-lg text-gray-600 text-center mb-8 max-w-xl px-4">
           Enter your address to find water quality data for your area.
         </p>
 
-        <Card className="w-full max-w-2xl mx-auto p-6 rounded-2xl shadow-sm">
+        <Card className="w-full max-w-2xl mx-auto p-4 sm:p-6 rounded-2xl shadow-sm">
           {/* Search Mode Toggle */}
-          <div className="flex gap-2 mb-4 border-b border-gray-200 pb-4">
+          <div className="flex flex-col sm:flex-row gap-2 mb-4 border-b border-gray-200 pb-4">
             <Button
               type="button"
               variant={searchMode === 'address' ? 'default' : 'ghost'}
-              className={searchMode === 'address' ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}
+              className={`flex-1 sm:flex-none ${searchMode === 'address' ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}`}
               onClick={() => {
                 setSearchMode('address')
                 setResults(null)
@@ -135,13 +135,14 @@ export default function Home() {
                 setError('')
               }}
             >
-              <MapPin className="w-4 h-4 mr-2" />
-              Search by Address
+              <MapPin className="w-4 h-4 sm:mr-2" />
+              <span className="hidden min-[400px]:inline">Search by Address</span>
+              <span className="min-[400px]:hidden">By Address</span>
             </Button>
             <Button
               type="button"
               variant={searchMode === 'system' ? 'default' : 'ghost'}
-              className={searchMode === 'system' ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}
+              className={`flex-1 sm:flex-none ${searchMode === 'system' ? 'bg-orange-500 hover:bg-orange-600 text-white' : ''}`}
               onClick={() => {
                 setSearchMode('system')
                 setResults(null)
@@ -149,42 +150,44 @@ export default function Home() {
                 setError('')
               }}
             >
-              <Building2 className="w-4 h-4 mr-2" />
-              Search by Water System
+              <Building2 className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Search by Water System</span>
+              <span className="hidden min-[400px]:inline sm:hidden">By System</span>
+              <span className="min-[400px]:hidden">System</span>
             </Button>
           </div>
 
           {/* Address Search Form */}
           {searchMode === 'address' ? (
             <form onSubmit={handleAddressSearch} className="flex flex-col gap-4">
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Input
                   type="text"
                   placeholder="Enter your address (e.g., 123 Main St, Atlanta, GA 30309)"
                   value={address}
                   onChange={e => setAddress(e.target.value)}
-                  className="flex-1 text-base"
+                  className="flex-1 text-sm sm:text-base min-w-0"
                   autoFocus
                 />
-                <Button type="submit" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6" disabled={loading}>
+                <Button type="submit" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 sm:px-6 shrink-0" disabled={loading}>
                   {loading ? 'Searching...' : 'Search'}
                 </Button>
               </div>
-              {error && <div className="text-red-600 text-sm">{error}</div>}
+              {error && <div className="text-red-600 text-sm break-words">{error}</div>}
             </form>
           ) : (
             /* System Search Form */
             <form onSubmit={handleSystemSearch} className="flex flex-col gap-2">
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Input
                   type="text"
                   placeholder="Search by Water System Name or ID..."
                   value={advanced.waterSystemName || advanced.waterSystemNo}
                   onChange={e => setAdvanced(a => ({ ...a, waterSystemName: e.target.value, waterSystemNo: e.target.value }))}
-                  className="flex-1 text-base"
+                  className="flex-1 text-sm sm:text-base min-w-0"
                   autoFocus
                 />
-                <Button type="submit" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6" disabled={loading}>
+                <Button type="submit" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 sm:px-6 shrink-0" disabled={loading}>
                   {loading ? 'Searching...' : 'Search'}
                 </Button>
               </div>
@@ -317,7 +320,7 @@ export default function Home() {
                 </div>
               </div>
             )}
-              {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+              {error && <div className="text-red-600 text-sm mt-2 break-words">{error}</div>}
             </form>
           )}
 
@@ -388,9 +391,9 @@ export default function Home() {
                 {waterQualityData.map((system: WaterQualitySystem) => (
                   <Card key={system.pwsid || system.id} className="p-4 border-l-4 border-l-orange-500">
                     <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{system.pws_name || 'Water System'}</h3>
-                        <p className="text-sm text-gray-600">PWSID: {system.pwsid || system.id}</p>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 truncate">{system.pws_name || 'Water System'}</h3>
+                        <p className="text-sm text-gray-600 truncate">PWSID: {system.pwsid || system.id}</p>
                         {system.county_served && (
                           <p className="text-sm text-gray-600">County: {system.county_served}</p>
                         )}
@@ -423,14 +426,14 @@ export default function Home() {
                         <p className="text-sm font-semibold">{system.primary_source_code || 'N/A'}</p>
                       </div>
                     </div>
-                    <div className="mt-4 flex gap-2">
-                      <Link href={`/map?pwsid=${system.pwsid || system.id}`}>
-                        <Button variant="outline" size="sm" className="border-orange-500 text-orange-600 hover:bg-orange-50">
+                    <div className="mt-4 flex flex-col sm:flex-row gap-2">
+                      <Link href={`/map?pwsid=${system.pwsid || system.id}`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto border-orange-500 text-orange-600 hover:bg-orange-50">
                           View on Map
                         </Button>
                       </Link>
-                      <Link href={`/compliance?pwsid=${system.pwsid || system.id}`}>
-                        <Button variant="outline" size="sm" className="border-orange-500 text-orange-600 hover:bg-orange-50">
+                      <Link href={`/compliance?pwsid=${system.pwsid || system.id}`} className="flex-1">
+                        <Button variant="outline" size="sm" className="w-full sm:w-auto border-orange-500 text-orange-600 hover:bg-orange-50">
                           View Compliance
                         </Button>
                       </Link>
@@ -491,11 +494,11 @@ export default function Home() {
 
       {/* Floating Chat Button */}
       <button
-        className="fixed bottom-8 right-8 z-50 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg focus:outline-none"
+        className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center shadow-lg focus:outline-none"
         aria-label="Open chat"
         // TODO: Add chat open handler
       >
-        <MessageCircle className="w-7 h-7" />
+        <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
       </button>
     </main>
   )

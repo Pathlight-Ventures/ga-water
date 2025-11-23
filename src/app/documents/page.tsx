@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ResponsiveTabs, ResponsiveTabsContent, ResponsiveTabsList, ResponsiveTabsTrigger } from '@/components/ui/responsive-tabs'
 import { Badge } from '@/components/ui/badge'
 import { 
   Upload, 
@@ -170,21 +170,21 @@ export default function DocumentsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Document Management</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Document Management</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Upload, organize, and manage documents for water systems
           </p>
         </div>
 
-        <Tabs defaultValue="library" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="library">Document Library</TabsTrigger>
-            <TabsTrigger value="upload">Upload Document</TabsTrigger>
-          </TabsList>
+        <ResponsiveTabs defaultValue="library">
+          <ResponsiveTabsList>
+            <ResponsiveTabsTrigger value="library">Document Library</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="upload">Upload Document</ResponsiveTabsTrigger>
+          </ResponsiveTabsList>
 
-          <TabsContent value="upload" className="space-y-6">
+          <ResponsiveTabsContent value="upload" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Upload Document</CardTitle>
@@ -294,40 +294,40 @@ export default function DocumentsPage() {
                 </form>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="library" className="space-y-6">
+          <ResponsiveTabsContent value="library" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Document Library</CardTitle>
-                    <CardDescription>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="break-words">Document Library</CardTitle>
+                    <CardDescription className="break-words">
                       Browse and manage uploaded documents
                     </CardDescription>
                   </div>
-                  <Button onClick={() => document.getElementById('library')?.scrollIntoView({ behavior: 'smooth' })}>
-                    <Filter className="w-4 h-4 mr-2" />
+                  <Button onClick={() => document.getElementById('library')?.scrollIntoView({ behavior: 'smooth' })} className="shrink-0 w-full sm:w-auto">
+                    <Filter className="w-4 h-4 sm:mr-2" />
                     Filter
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4" id="library">
-                  <div className="flex gap-4">
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1 min-w-0">
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
                           placeholder="Search documents..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 min-w-0"
                         />
                       </div>
                     </div>
                     <Select value={filterType} onValueChange={setFilterType}>
-                      <SelectTrigger className="w-48">
+                      <SelectTrigger className="w-full sm:w-auto min-w-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -340,7 +340,7 @@ export default function DocumentsPage() {
                       </SelectContent>
                     </Select>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
-                      <SelectTrigger className="w-48">
+                      <SelectTrigger className="w-full sm:w-auto min-w-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -361,13 +361,13 @@ export default function DocumentsPage() {
                       filteredDocuments.map(doc => (
                         <div
                           key={doc.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3 min-w-0"
                         >
-                          <div className="flex items-center gap-4">
-                            {getDocumentIcon(doc.type)}
-                            <div>
-                              <h4 className="font-medium text-gray-900">{doc.name}</h4>
-                              <div className="flex gap-2 mt-1">
+                          <div className="flex items-center gap-4 min-w-0 flex-1">
+                            <div className="shrink-0">{getDocumentIcon(doc.type)}</div>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-medium text-gray-900 truncate">{doc.name}</h4>
+                              <div className="flex flex-wrap gap-2 mt-1">
                                 <span className="text-sm text-gray-600">{doc.category}</span>
                                 <span className="text-sm text-gray-400">•</span>
                                 <span className="text-sm text-gray-600">{doc.size}</span>
@@ -375,19 +375,19 @@ export default function DocumentsPage() {
                                 <span className="text-sm text-gray-600">{doc.uploadedDate}</span>
                               </div>
                               {doc.waterSystem && (
-                                <p className="text-xs text-gray-500 mt-1">{doc.waterSystem}</p>
+                                <p className="text-xs text-gray-500 mt-1 truncate">{doc.waterSystem}</p>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {getStatusBadge(doc.status)}
-                            <Button variant="ghost" size="sm">
+                          <div className="flex items-center gap-2 shrink-0">
+                            <div className="shrink-0">{getStatusBadge(doc.status)}</div>
+                            <Button variant="ghost" size="sm" className="p-2">
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="p-2">
                               <Download className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="p-2">
                               <Trash2 className="w-4 h-4 text-red-600" />
                             </Button>
                           </div>
@@ -398,8 +398,8 @@ export default function DocumentsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </ResponsiveTabsContent>
+        </ResponsiveTabs>
       </div>
     </main>
   )

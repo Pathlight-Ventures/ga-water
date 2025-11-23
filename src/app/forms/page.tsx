@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ResponsiveTabs, ResponsiveTabsContent, ResponsiveTabsList, ResponsiveTabsTrigger } from '@/components/ui/responsive-tabs'
 import { Badge } from '@/components/ui/badge'
 import { 
   FileText,
@@ -111,7 +111,7 @@ export default function FormsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Forms Management</h1>
           <p className="text-gray-600">
@@ -119,49 +119,49 @@ export default function FormsPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="templates" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="merge-fields">Merge Fields</TabsTrigger>
-            <TabsTrigger value="workflow">Workflow Rules</TabsTrigger>
-            <TabsTrigger value="distribution">Distribution</TabsTrigger>
-          </TabsList>
+        <ResponsiveTabs defaultValue="templates" className="space-y-6">
+          <ResponsiveTabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1">
+            <ResponsiveTabsTrigger value="templates" className="text-xs sm:text-sm">Templates</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="merge-fields" className="text-xs sm:text-sm">Merge Fields</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="workflow" className="text-xs sm:text-sm">Workflow Rules</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="distribution" className="text-xs sm:text-sm">Distribution</ResponsiveTabsTrigger>
+          </ResponsiveTabsList>
 
-          <TabsContent value="templates" className="space-y-6">
+          <ResponsiveTabsContent value="templates" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Document Templates</CardTitle>
-                    <CardDescription>
-                      Create and manage form templates
-                    </CardDescription>
-                  </div>
+                <div>
+                  <CardTitle>Document Templates</CardTitle>
+                  <CardDescription>
+                    Create and manage form templates
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
                   <Button onClick={() => setShowTemplateEditor(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     New Template
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
                 <div className="space-y-4">
                   {templates.map(template => (
                     <div
                       key={template.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg hover:bg-gray-50"
                     >
-                      <div>
-                        <h4 className="font-medium">{template.name}</h4>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium truncate">{template.name}</h4>
                         <p className="text-sm text-gray-600">{template.description}</p>
-                        <div className="flex gap-2 mt-2">
+                        <div className="flex flex-wrap gap-2 mt-2">
                           {template.mergeFields.map((field, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
+                            <Badge key={index} variant="secondary" className="text-xs whitespace-nowrap">
                               {formatMergeField(field)}
                             </Badge>
                           ))}
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 shrink-0">
                         <Button variant="ghost" size="sm" onClick={() => {
                           setSelectedTemplate(template)
                           setShowTemplateEditor(true)
@@ -184,7 +184,7 @@ export default function FormsPage() {
                   <CardTitle>{selectedTemplate ? 'Edit Template' : 'New Template'}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="templateName">Template Name</Label>
                       <Input
@@ -196,7 +196,7 @@ export default function FormsPage() {
                     <div className="space-y-2">
                       <Label htmlFor="templateType">Template Type</Label>
                       <Select defaultValue="letter">
-                        <SelectTrigger id="templateType">
+                        <SelectTrigger id="templateType" className="w-full sm:w-auto min-w-0">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -219,7 +219,7 @@ export default function FormsPage() {
                       placeholder="Enter template content. Use merge fields to insert dynamic data..."
                     />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button onClick={handleGenerateDocument}>
                       Generate Document
                     </Button>
@@ -230,9 +230,9 @@ export default function FormsPage() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="merge-fields" className="space-y-6">
+          <ResponsiveTabsContent value="merge-fields" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Merge Fields</CardTitle>
@@ -241,15 +241,15 @@ export default function FormsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {mergeFields.map((field, index) => (
                     <div
                       key={index}
-                      className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                      className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer min-w-0"
                       onClick={() => handleInsertMergeField(field)}
                     >
-                      <code className="text-sm font-mono">{field}</code>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <code className="text-sm font-mono break-all">{field}</code>
+                      <p className="text-xs text-gray-500 mt-1 truncate">
                         {formatMergeField(field)}
                       </p>
                     </div>
@@ -257,9 +257,9 @@ export default function FormsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="workflow" className="space-y-6">
+          <ResponsiveTabsContent value="workflow" className="space-y-6">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
@@ -280,23 +280,23 @@ export default function FormsPage() {
                   {workflowRules.map(rule => (
                     <div
                       key={rule.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg"
                     >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-medium">{rule.name}</h4>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <h4 className="font-medium truncate">{rule.name}</h4>
                           {rule.enabled && (
-                            <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                            <Badge className="bg-green-100 text-green-800 shrink-0">Enabled</Badge>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 break-words">
                           <span className="font-medium">Trigger:</span> {rule.trigger}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 break-words">
                           <span className="font-medium">Action:</span> {rule.action}
                         </p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 shrink-0">
                         <Button variant="ghost" size="sm">
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -309,9 +309,9 @@ export default function FormsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="distribution" className="space-y-6">
+          <ResponsiveTabsContent value="distribution" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Document Distribution</CardTitle>
@@ -349,7 +349,7 @@ export default function FormsPage() {
                       value={distributionMethod} 
                       onValueChange={(value: 'email' | 'print' | 'both') => setDistributionMethod(value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full sm:w-auto min-w-0">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -368,12 +368,12 @@ export default function FormsPage() {
                     />
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button onClick={handleDistribute} className="flex-1">
                       <Send className="w-4 h-4 mr-2" />
                       Send Document
                     </Button>
-                    <Button variant="outline">
+                    <Button variant="outline" className="w-full sm:w-auto">
                       <Printer className="w-4 h-4 mr-2" />
                       Print
                     </Button>
@@ -418,7 +418,7 @@ export default function FormsPage() {
                       <div className="space-y-2">
                         <Label htmlFor="signingOrder">Signing Order</Label>
                         <Select defaultValue="any">
-                          <SelectTrigger id="signingOrder">
+                          <SelectTrigger id="signingOrder" className="w-full sm:w-auto min-w-0">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -466,8 +466,8 @@ export default function FormsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </ResponsiveTabsContent>
+        </ResponsiveTabs>
       </div>
     </main>
   )

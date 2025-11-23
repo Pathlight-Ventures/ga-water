@@ -116,7 +116,7 @@ export default function DataEntryPage() {
 
   const renderDailySurfaceForm = () => (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="date">Date *</Label>
           <Input
@@ -139,7 +139,7 @@ export default function DataEntryPage() {
           />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="rawWaterTurbidity">Raw Water Turbidity (NTU)</Label>
           <Input
@@ -176,7 +176,7 @@ export default function DataEntryPage() {
           />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="filterBackwash">Filter Backwash (Yes/No)</Label>
           <Select 
@@ -214,7 +214,7 @@ export default function DataEntryPage() {
       </div>
       <div className="space-y-4">
         {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-          <div key={day} className="grid grid-cols-4 gap-4 items-center">
+          <div key={day} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
             <div className="font-medium">Day {day}</div>
             <div className="space-y-2">
               <Label htmlFor={`turbidity-${day}`}>Turbidity (NTU)</Label>
@@ -247,21 +247,21 @@ export default function DataEntryPage() {
       </div>
       <div className="p-4 border rounded-lg bg-gray-50">
         <h4 className="font-semibold mb-2">Calculated Values</h4>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
-            <p className="text-sm text-gray-600">Average Turbidity</p>
+            <p className="text-sm text-gray-600 break-words">Average Turbidity</p>
             <p className="text-lg font-bold">0.18 NTU</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Maximum Turbidity</p>
+            <p className="text-sm text-gray-600 break-words">Maximum Turbidity</p>
             <p className="text-lg font-bold">0.32 NTU</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Minimum Turbidity</p>
+            <p className="text-sm text-gray-600 break-words">Minimum Turbidity</p>
             <p className="text-lg font-bold">0.12 NTU</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Days Reported</p>
+            <p className="text-sm text-gray-600 break-words">Days Reported</p>
             <p className="text-lg font-bold">30</p>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function DataEntryPage() {
       </div>
       <div className="space-y-4">
         {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-          <div key={day} className="grid grid-cols-5 gap-4 items-center border-b pb-4">
+          <div key={day} className="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center border-b pb-4">
             <div className="font-medium">Day {day}</div>
             <div className="space-y-2">
               <Label htmlFor={`entry-chlorine-${day}`}>Entry Point (mg/L)</Label>
@@ -348,10 +348,10 @@ export default function DataEntryPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Data Entry</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Data Entry</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Enter daily and monthly operational data for your water system
           </p>
         </div>
@@ -365,20 +365,20 @@ export default function DataEntryPage() {
                 <CardDescription>Select a form to fill out</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[600px] overflow-y-auto lg:max-h-none lg:overflow-visible">
                   {reportForms.map(form => (
                     <button
                       key={form.id}
                       onClick={() => setSelectedForm(form.id)}
-                      className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                      className={`w-full text-left p-3 rounded-lg border-2 transition-all min-w-0 ${
                         selectedForm === form.id
                           ? 'border-orange-500 bg-orange-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <FileText className="w-4 h-4" />
-                        <span className="font-medium text-sm">{form.name}</span>
+                      <div className="flex items-center gap-2 mb-1 min-w-0">
+                        <FileText className="w-4 h-4 shrink-0" />
+                        <span className="font-medium text-sm break-words flex-1">{form.name}</span>
                       </div>
                       <Badge variant="secondary" className="text-xs">
                         {form.type}
@@ -394,13 +394,13 @@ export default function DataEntryPage() {
           <div className="lg:col-span-3">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle>{selectedFormData?.name || 'Select a Form'}</CardTitle>
-                    <CardDescription>{selectedFormData?.description || ''}</CardDescription>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="break-words">{selectedFormData?.name || 'Select a Form'}</CardTitle>
+                    <CardDescription className="break-words">{selectedFormData?.description || ''}</CardDescription>
                   </div>
                   {saved && (
-                    <Badge className="bg-green-100 text-green-800">
+                    <Badge className="bg-green-100 text-green-800 shrink-0">
                       <CheckCircle className="w-3 h-3 mr-1" />
                       Saved
                     </Badge>
@@ -409,7 +409,7 @@ export default function DataEntryPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6 mb-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="month">Month/Year *</Label>
                       <Input

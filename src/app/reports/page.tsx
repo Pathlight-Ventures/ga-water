@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ResponsiveTabs, ResponsiveTabsContent, ResponsiveTabsList, ResponsiveTabsTrigger } from '@/components/ui/responsive-tabs'
 import { Badge } from '@/components/ui/badge'
 import { 
   FileText,
@@ -94,24 +94,24 @@ export default function ReportsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Reports</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Reports</h1>
+          <p className="text-sm sm:text-base text-gray-600">
             Generate, view, and download reports
           </p>
         </div>
 
-        <Tabs defaultValue="generate" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="generate">Generate Report</TabsTrigger>
-            <TabsTrigger value="summary">Summary Page</TabsTrigger>
-            <TabsTrigger value="addendum">Summary Addendum</TabsTrigger>
-            <TabsTrigger value="bulk">Bulk Download</TabsTrigger>
-            <TabsTrigger value="historical">Historical Data</TabsTrigger>
-          </TabsList>
+        <ResponsiveTabs defaultValue="generate">
+          <ResponsiveTabsList>
+            <ResponsiveTabsTrigger value="generate">Generate Report</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="summary">Summary Page</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="addendum">Summary Addendum</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="bulk">Bulk Download</ResponsiveTabsTrigger>
+            <ResponsiveTabsTrigger value="historical">Historical Data</ResponsiveTabsTrigger>
+          </ResponsiveTabsList>
 
-          <TabsContent value="generate" className="space-y-6">
+          <ResponsiveTabsContent value="generate" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Generate Report</CardTitle>
@@ -120,7 +120,7 @@ export default function ReportsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="month">Month/Year *</Label>
                     <Input
@@ -147,7 +147,7 @@ export default function ReportsPage() {
                     </Select>
                   </div>
 
-                  <div className="space-y-2 col-span-2">
+                  <div className="space-y-2 col-span-1 sm:col-span-2">
                     <Label htmlFor="reportType">Report Type *</Label>
                     <Select value={selectedReport} onValueChange={setSelectedReport} required>
                       <SelectTrigger id="reportType">
@@ -172,11 +172,12 @@ export default function ReportsPage() {
                 {showSummary && (
                   <Card className="border-2">
                     <CardHeader>
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <CardTitle>Monthly Summary Page</CardTitle>
-                        <Button onClick={handleExcelDownload}>
-                          <Download className="w-4 h-4 mr-2" />
-                          Download Excel
+                        <Button onClick={handleExcelDownload} className="w-full sm:w-auto">
+                          <Download className="w-4 h-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Download Excel</span>
+                          <span className="sm:hidden">Download</span>
                         </Button>
                       </div>
                     </CardHeader>
@@ -185,7 +186,7 @@ export default function ReportsPage() {
                         <div>
                           <h3 className="font-semibold mb-2">Atlanta Water Plant #1 - November 2025</h3>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm text-gray-600">Total Monthly Flow</p>
                             <p className="text-2xl font-bold">{sampleData.totalMonthlyFlow.toLocaleString()} gallons</p>
@@ -213,21 +214,22 @@ export default function ReportsPage() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="summary" className="space-y-6">
+          <ResponsiveTabsContent value="summary" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Monthly Summary Page</CardTitle>
-                    <CardDescription>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="break-words">Monthly Summary Page</CardTitle>
+                    <CardDescription className="break-words">
                       Comprehensive monthly overview
                     </CardDescription>
                   </div>
-                  <Button onClick={handleExcelDownload}>
-                    <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    Download Excel
+                  <Button onClick={handleExcelDownload} className="shrink-0 w-full sm:w-auto">
+                    <FileSpreadsheet className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Download Excel</span>
+                    <span className="sm:hidden">Download</span>
                   </Button>
                 </div>
               </CardHeader>
@@ -236,7 +238,7 @@ export default function ReportsPage() {
                   <div className="border rounded-lg p-6">
                     <h3 className="text-xl font-bold mb-4">Atlanta Water Plant #1 - November 2025</h3>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-6">
                       <div>
                         <p className="text-sm text-gray-600 mb-1">Total Monthly Flow</p>
                         <p className="text-2xl font-bold">{sampleData.totalMonthlyFlow.toLocaleString()}</p>
@@ -261,7 +263,7 @@ export default function ReportsPage() {
 
                     <div className="border-t pt-4">
                       <h4 className="font-semibold mb-2">Calculations</h4>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-gray-600">Total</p>
                           <p className="font-medium">{sampleData.totalMonthlyFlow.toLocaleString()} gallons</p>
@@ -288,40 +290,41 @@ export default function ReportsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="addendum" className="space-y-6">
+          <ResponsiveTabsContent value="addendum" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Monthly Summary Page Addendum</CardTitle>
-                    <CardDescription>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="break-words">Monthly Summary Page Addendum</CardTitle>
+                    <CardDescription className="break-words">
                       Additional detailed information
                     </CardDescription>
                   </div>
-                  <Button onClick={handleExcelDownload}>
-                    <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    Download Excel
+                  <Button onClick={handleExcelDownload} className="shrink-0 w-full sm:w-auto">
+                    <FileSpreadsheet className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Download Excel</span>
+                    <span className="sm:hidden">Download</span>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex gap-4 mb-4">
-                    <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                    <div className="flex-1 min-w-0">
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                         <Input
                           placeholder="Search (e.g., 'Date of Notice to GAEPD')..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
+                          className="pl-10 min-w-0"
                         />
                       </div>
                     </div>
                     <Select value={searchField} onValueChange={setSearchField}>
-                      <SelectTrigger className="w-64">
+                      <SelectTrigger className="w-full sm:w-auto min-w-0">
                         <SelectValue placeholder="Select field to search" />
                       </SelectTrigger>
                       <SelectContent>
@@ -337,7 +340,7 @@ export default function ReportsPage() {
                     <h3 className="text-xl font-bold mb-4">Atlanta Water Plant #1 - November 2025 Addendum</h3>
                     
                     <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <p className="text-sm text-gray-600">Date of Notice to GAEPD</p>
                           <p className="font-medium">{sampleData.dateNoticeGAEPD}</p>
@@ -360,9 +363,9 @@ export default function ReportsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="bulk" className="space-y-6">
+          <ResponsiveTabsContent value="bulk" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Bulk Download</CardTitle>
@@ -371,7 +374,7 @@ export default function ReportsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="bulkMonth">Month/Year *</Label>
                     <Input
@@ -442,27 +445,28 @@ export default function ReportsPage() {
                 </Button>
               </CardContent>
             </Card>
-          </TabsContent>
+          </ResponsiveTabsContent>
 
-          <TabsContent value="historical" className="space-y-6">
+          <ResponsiveTabsContent value="historical" className="space-y-6">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Historical Data Viewing</CardTitle>
-                    <CardDescription>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 min-w-0">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="break-words">Historical Data Viewing</CardTitle>
+                    <CardDescription className="break-words">
                       View reports and data from the past 4 years
                     </CardDescription>
                   </div>
-                  <Button onClick={handleExcelDownload}>
-                    <FileSpreadsheet className="w-4 h-4 mr-2" />
-                    Download Historical Data
+                  <Button onClick={handleExcelDownload} className="shrink-0 w-full sm:w-auto">
+                    <FileSpreadsheet className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Download Historical Data</span>
+                    <span className="sm:hidden">Download</span>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="historicalYearFrom">From Year</Label>
                       <Select defaultValue="2021">
@@ -500,7 +504,7 @@ export default function ReportsPage() {
                     <p className="text-sm text-gray-600 mb-4">
                       The system maintains 12 years of historical data as required by regulations. You can view and download reports from any period within this range.
                     </p>
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                       <div>
                         <p className="text-sm text-gray-600">2021 Reports</p>
                         <p className="text-2xl font-bold">12</p>
@@ -528,20 +532,20 @@ export default function ReportsPage() {
                       { year: 2024, month: 'October', system: 'Atlanta Water Plant #1', status: 'Complete' },
                       { year: 2023, month: 'December', system: 'Atlanta Water Plant #1', status: 'Complete' },
                     ].map((report, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                        <div>
-                          <h5 className="font-medium">{report.month} {report.year} - {report.system}</h5>
+                      <div key={index} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg hover:bg-gray-50 gap-3">
+                        <div className="min-w-0 flex-1">
+                          <h5 className="font-medium truncate">{report.month} {report.year} - {report.system}</h5>
                           <p className="text-sm text-gray-600">Monthly Summary Report</p>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 flex-wrap shrink-0">
                           <Badge className="bg-green-100 text-green-800">{report.status}</Badge>
-                          <Button variant="outline" size="sm">
-                            <FileText className="w-4 h-4 mr-2" />
-                            View
+                          <Button variant="outline" size="sm" className="px-2 sm:px-3">
+                            <FileText className="w-4 h-4 sm:mr-2" />
+                            <span className="hidden sm:inline">View</span>
                           </Button>
-                          <Button variant="outline" size="sm" onClick={handleExcelDownload}>
-                            <Download className="w-4 h-4 mr-2" />
-                            Download
+                          <Button variant="outline" size="sm" onClick={handleExcelDownload} className="px-2 sm:px-3">
+                            <Download className="w-4 h-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Download</span>
                           </Button>
                         </div>
                       </div>
@@ -550,8 +554,8 @@ export default function ReportsPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </ResponsiveTabsContent>
+        </ResponsiveTabs>
       </div>
     </main>
   )

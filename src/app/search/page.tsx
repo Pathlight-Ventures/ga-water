@@ -68,7 +68,7 @@ const mockWaterSystems = [
 export default function SearchPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Search Water Systems</h1>
@@ -148,18 +148,20 @@ export default function SearchPage() {
               </div>
             </div>
             
-            <div className="flex gap-2 mt-6">
-              <Button className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 mt-6">
+              <Button className="flex items-center justify-center gap-2 w-full sm:w-auto">
                 <Search className="w-4 h-4" />
                 Search
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center justify-center gap-2 w-full sm:w-auto">
                 <Filter className="w-4 h-4" />
-                Clear Filters
+                <span className="hidden sm:inline">Clear Filters</span>
+                <span className="sm:hidden">Clear</span>
               </Button>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center justify-center gap-2 w-full sm:w-auto">
                 <Download className="w-4 h-4" />
-                Export Results
+                <span className="hidden sm:inline">Export Results</span>
+                <span className="sm:hidden">Export</span>
               </Button>
             </div>
           </CardContent>
