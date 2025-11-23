@@ -102,7 +102,7 @@ export function Navigation() {
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
-        <div className="flex justify-between items-center h-16 gap-2 overflow-hidden">
+        <div className="flex justify-between items-center h-16 gap-2">
           {/* Logo and Title */}
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity min-w-0">
@@ -117,7 +117,7 @@ export function Navigation() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4 overflow-visible">
             {/* Public navigation items */}
             {publicNavItems.map((item) => {
               const Icon = item.icon
@@ -135,7 +135,7 @@ export function Navigation() {
 
             {/* Partner Tools Dropdown - only for authenticated users */}
             {mounted && isAuthenticated && isApproved && (
-              <div className="relative" ref={partnerToolsRef}>
+              <div className="relative z-[100]" ref={partnerToolsRef}>
                 <Button
                   variant="ghost"
                   className="flex items-center gap-2 text-gray-700 hover:text-orange-600 hover:bg-orange-50"
@@ -145,7 +145,7 @@ export function Navigation() {
                   <ChevronDown className={`w-4 h-4 transition-transform ${isPartnerToolsOpen ? 'rotate-180' : ''}`} />
                 </Button>
                 {isPartnerToolsOpen && (
-                  <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-[100]">
                     {partnerToolsItems.map((item) => {
                       const Icon = item.icon
                       return (
@@ -183,7 +183,7 @@ export function Navigation() {
             ) : isAuthenticated && isApproved ? (
               <div className="flex items-center gap-2 ml-4">
                 {/* Profile Icon Dropdown */}
-                <div className="relative" ref={profileMenuRef}>
+                <div className="relative z-[100]" ref={profileMenuRef}>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -195,7 +195,7 @@ export function Navigation() {
                     </div>
                   </Button>
                   {isProfileMenuOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50">
+                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-[100]">
                       {/* Welcome Card */}
                       <div className="px-4 py-3 border-b border-gray-200">
                         <div className="text-sm font-semibold text-gray-900">
