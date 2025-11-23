@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -60,13 +60,8 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState('q1-2025')
 
-  const analyticsRepo = new AnalyticsRepository()
-
-  useEffect(() => {
-    loadAnalyticsData()
-  }, [timeRange])
-
-  const loadAnalyticsData = async () => {
+  const loadAnalyticsData = useCallback(async () => {
+    const analyticsRepo = new AnalyticsRepository()
     setLoading(true)
     setError(null)
     
@@ -111,7 +106,11 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadAnalyticsData()
+  }, [loadAnalyticsData])
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) {

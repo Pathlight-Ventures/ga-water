@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isDemoMode } from '@/lib/supabase/client'
 
 export interface WaterSystem {
   id: string
@@ -61,13 +61,174 @@ export interface SearchFilters {
   offset?: number
 }
 
+// Mock data for demo mode
+const mockWaterSystemSearchResults: WaterSystemSearchResult[] = [
+  {
+    id: '1',
+    pwsid: 'GA0000001',
+    pws_name: 'Atlanta Water Plant #1',
+    pws_type_code: 'CWS',
+    pws_activity_code: 'A',
+    population_served_count: 500000,
+    city_name: 'Atlanta',
+    state_code: 'GA',
+    violation_count: 2,
+    last_reported_date: '2025-11-01',
+    created_at: '2025-01-01T00:00:00Z'
+  },
+  {
+    id: '2',
+    pwsid: 'GA0000002',
+    pws_name: 'Savannah Water System',
+    pws_type_code: 'CWS',
+    pws_activity_code: 'A',
+    population_served_count: 150000,
+    city_name: 'Savannah',
+    state_code: 'GA',
+    violation_count: 0,
+    last_reported_date: '2025-11-01',
+    created_at: '2025-01-01T00:00:00Z'
+  },
+  {
+    id: '3',
+    pwsid: 'GA0000003',
+    pws_name: 'Augusta Water Treatment Facility',
+    pws_type_code: 'CWS',
+    pws_activity_code: 'A',
+    population_served_count: 200000,
+    city_name: 'Augusta',
+    state_code: 'GA',
+    violation_count: 1,
+    last_reported_date: '2025-11-01',
+    created_at: '2025-01-01T00:00:00Z'
+  },
+  {
+    id: '4',
+    pwsid: 'GA0000004',
+    pws_name: 'Columbus Water Works',
+    pws_type_code: 'CWS',
+    pws_activity_code: 'A',
+    population_served_count: 180000,
+    city_name: 'Columbus',
+    state_code: 'GA',
+    violation_count: 0,
+    last_reported_date: '2025-11-01',
+    created_at: '2025-01-01T00:00:00Z'
+  },
+  {
+    id: '5',
+    pwsid: 'GA0000005',
+    pws_name: 'Athens-Clarke County Water System',
+    pws_type_code: 'CWS',
+    pws_activity_code: 'A',
+    population_served_count: 120000,
+    city_name: 'Athens',
+    state_code: 'GA',
+    violation_count: 0,
+    last_reported_date: '2025-11-01',
+    created_at: '2025-01-01T00:00:00Z'
+  },
+  {
+    id: '6',
+    pwsid: 'GA0000006',
+    pws_name: 'Macon Water Authority',
+    pws_type_code: 'CWS',
+    pws_activity_code: 'A',
+    population_served_count: 160000,
+    city_name: 'Macon',
+    state_code: 'GA',
+    violation_count: 1,
+    last_reported_date: '2025-11-01',
+    created_at: '2025-01-01T00:00:00Z'
+  }
+]
+
+function filterMockSearchResults(results: WaterSystemSearchResult[], filters: SearchFilters): WaterSystemSearchResult[] {
+  let filtered = [...results]
+
+  if (filters.searchTerm) {
+    const searchLower = filters.searchTerm.toLowerCase()
+    filtered = filtered.filter(sys =>
+      sys.pws_name?.toLowerCase().includes(searchLower) ||
+      sys.pwsid.toLowerCase().includes(searchLower) ||
+      sys.city_name?.toLowerCase().includes(searchLower)
+    )
+  }
+
+  if (filters.stateCode) {
+    filtered = filtered.filter(sys => sys.state_code === filters.stateCode)
+  }
+
+  if (filters.pwsType) {
+    filtered = filtered.filter(sys => sys.pws_type_code === filters.pwsType)
+  }
+
+  if (filters.activityStatus) {
+    filtered = filtered.filter(sys => sys.pws_activity_code === filters.activityStatus)
+  }
+
+  if (filters.hasViolations !== undefined) {
+    if (filters.hasViolations) {
+      filtered = filtered.filter(sys => sys.violation_count > 0)
+    } else {
+      filtered = filtered.filter(sys => sys.violation_count === 0)
+    }
+  }
+
+  const limit = filters.limit || 50
+  const offset = filters.offset || 0
+  return filtered.slice(offset, offset + limit)
+}
+
 export class WaterSystemsRepository {
-  private supabase = createClient()
+  private supabase: ReturnType<typeof createClient>
+
+  constructor() {
+    // Initialize Supabase client lazily to avoid SSR issues
+    if (typeof window !== 'undefined' || isDemoMode) {
+      this.supabase = createClient()
+    } else {
+      // During SSR, use a minimal mock
+      this.supabase = createClient()
+    }
+  }
 
   /**
    * Get a water system by PWSID
    */
   async getByPwsid(pwsid: string): Promise<WaterSystem | null> {
+    if (isDemoMode) {
+      // Return mock data in demo mode
+      const mockSystem = mockWaterSystemSearchResults.find(sys => sys.pwsid === pwsid)
+      if (!mockSystem) return null
+      return {
+        id: mockSystem.id,
+        submission_year_quarter: '2025-Q1',
+        pwsid: mockSystem.pwsid,
+        pws_name: mockSystem.pws_name,
+        primacy_agency_code: 'GA',
+        epa_region: '04',
+        pws_activity_code: mockSystem.pws_activity_code,
+        pws_type_code: mockSystem.pws_type_code,
+        owner_type_code: 'M',
+        population_served_count: mockSystem.population_served_count,
+        primary_source_code: 'SW',
+        service_connections_count: (mockSystem.population_served_count || 0) / 3,
+        org_name: mockSystem.pws_name,
+        admin_name: null,
+        email_addr: null,
+        phone_number: null,
+        address_line1: null,
+        city_name: mockSystem.city_name,
+        state_code: mockSystem.state_code,
+        zip_code: null,
+        first_reported_date: '2025-01-01',
+        last_reported_date: mockSystem.last_reported_date,
+        created_at: mockSystem.created_at,
+        updated_at: mockSystem.created_at
+      }
+    }
+
     try {
       const { data, error } = await this.supabase
         .rpc('get_water_system_by_pwsid', { p_pwsid: pwsid })
@@ -88,6 +249,11 @@ export class WaterSystemsRepository {
    * Search water systems with filters
    */
   async search(filters: SearchFilters = {}): Promise<WaterSystemSearchResult[]> {
+    if (isDemoMode) {
+      // Return mock data in demo mode
+      return filterMockSearchResults(mockWaterSystemSearchResults, filters)
+    }
+
     try {
       const { data, error } = await this.supabase
         .rpc('search_water_systems', {
@@ -116,6 +282,28 @@ export class WaterSystemsRepository {
    * Get water system statistics
    */
   async getStats(): Promise<WaterSystemStats> {
+    if (isDemoMode) {
+      // Return mock stats in demo mode
+      const totalSystems = mockWaterSystemSearchResults.length
+      const activeSystems = mockWaterSystemSearchResults.filter(sys => sys.pws_activity_code === 'A').length
+      const systemsWithViolations = mockWaterSystemSearchResults.filter(sys => sys.violation_count > 0).length
+      const totalPopulation = mockWaterSystemSearchResults.reduce((sum, sys) => sum + (sys.population_served_count || 0), 0)
+      
+      return {
+        total_systems: totalSystems,
+        active_systems: activeSystems,
+        systems_with_violations: systemsWithViolations,
+        total_population_served: totalPopulation,
+        avg_population_per_system: totalPopulation / totalSystems,
+        systems_by_type: [
+          { type: 'CWS', count: totalSystems }
+        ],
+        systems_by_state: [
+          { state: 'GA', count: totalSystems }
+        ]
+      }
+    }
+
     try {
       const { data, error } = await this.supabase
         .rpc('get_water_system_stats')
@@ -198,5 +386,18 @@ export class WaterSystemsRepository {
   }
 }
 
-// Export singleton instance
-export const waterSystemsRepo = new WaterSystemsRepository() 
+// Export singleton instance - created lazily to avoid SSR issues
+let _waterSystemsRepoInstance: WaterSystemsRepository | null = null
+export const getWaterSystemsRepo = (): WaterSystemsRepository => {
+  if (!_waterSystemsRepoInstance) {
+    _waterSystemsRepoInstance = new WaterSystemsRepository()
+  }
+  return _waterSystemsRepoInstance
+}
+export const waterSystemsRepo = new Proxy({} as WaterSystemsRepository, {
+  get: (_target, prop: string | symbol) => {
+    const repo = getWaterSystemsRepo()
+    const value = (repo as unknown as Record<string | symbol, unknown>)[prop]
+    return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(repo) : value
+  }
+}) 

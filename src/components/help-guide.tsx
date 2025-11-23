@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,8 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { HelpCircle, Map, Search, BarChart3, Settings, MessageCircle } from "lucide-react";
 
 export function HelpGuide() {
-  const [open, setOpen] = useState(false);
-
   const features = [
     {
       icon: <Map className="h-5 w-5" />,
@@ -89,7 +86,7 @@ export function HelpGuide() {
   ];
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <HelpCircle className="h-4 w-4" />

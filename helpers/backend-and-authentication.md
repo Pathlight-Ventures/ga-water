@@ -1,4 +1,4 @@
-# Authentication System Documentation
+# Backend and Authentication System
 
 ## 🔐 **Overview**
 
@@ -8,7 +8,7 @@ The SpeedTrials 2025 application uses **Supabase Authentication** with a compreh
 
 ### **Authentication Flow**
 
-```
+```architecuture
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   User Signup   │───▶│  Email Verify   │───▶│  Admin Review   │
 │  (with Role)    │    │   (Required)    │    │   (Required)    │
@@ -39,6 +39,7 @@ The SpeedTrials 2025 application uses **Supabase Authentication** with a compreh
 ## 🚀 **Features**
 
 ### **Enhanced User Registration**
+
 - ✅ **Role Selection** - Users choose their role during signup
 - ✅ **Organization Details** - Required organization information
 - ✅ **Email Verification** - Mandatory email confirmation
@@ -46,6 +47,7 @@ The SpeedTrials 2025 application uses **Supabase Authentication** with a compreh
 - ✅ **Status Tracking** - Real-time approval status updates
 
 ### **Admin Management System**
+
 - ✅ **Approval Dashboard** - Centralized user management
 - ✅ **Bulk Operations** - Approve/reject multiple users
 - ✅ **User Statistics** - Comprehensive user analytics
@@ -53,6 +55,7 @@ The SpeedTrials 2025 application uses **Supabase Authentication** with a compreh
 - ✅ **Rejection Reasons** - Detailed rejection feedback
 
 ### **Security Features**
+
 - ✅ **Route Protection** - Middleware-based access control
 - ✅ **Role-Based Access** - Different permissions per role
 - ✅ **Approval Workflow** - Multi-step verification process
@@ -60,6 +63,7 @@ The SpeedTrials 2025 application uses **Supabase Authentication** with a compreh
 - ✅ **Audit Trail** - Complete user activity tracking
 
 ### **User Experience**
+
 - ✅ **Status Pages** - Clear approval status communication
 - ✅ **Email Notifications** - Automated status updates
 - ✅ **Progress Indicators** - Visual approval progress
@@ -68,7 +72,7 @@ The SpeedTrials 2025 application uses **Supabase Authentication** with a compreh
 
 ## 📁 **File Structure**
 
-```
+```dir
 src/
 ├── app/
 │   ├── auth/
@@ -263,4 +267,4 @@ For authentication-related issues:
 2. Review Supabase dashboard logs
 3. Check browser developer console for errors
 4. Verify environment variable configuration
-5. Contact system administrator for approval issues 
+5. Contact system administrator for approval issues

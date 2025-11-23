@@ -1,4 +1,6 @@
-# SpeedTrials 2025 - Georgia Drinking Water Data Explorer
+# Project Context and Overview
+
+## SpeedTrials 2025 - Georgia Drinking Water Data Explorer
 
 A fullstack application for exploring and analyzing Georgia's Safe Drinking Water Information System (SDWIS) data, designed to serve the EPD Drinking Water Program's diverse stakeholder needs.
 
@@ -162,9 +164,9 @@ The application includes an AI-powered chat assistant powered by Google's Gemini
    - Copy the API key
 
 2. **Add to Environment Variables**
-   
+
    Add the following to your `.env.local` file:
-   
+
    ```bash
    GEMINI_API_KEY=your_gemini_api_key_here
    ```
@@ -320,6 +322,47 @@ import { dataImporter } from '@/lib/data-import'
 const result = await dataImporter.importWaterSystems(csvData)
 console.log(`Imported ${result.recordsInserted} records`)
 ```
+
+## Quick Start: Run Prototype Demo
+
+### To Run the Prototype Application
+
+```bash
+cd ga-water
+npm install
+npm run dev
+```
+
+Then open your browser to: **`http://localhost:3000`**
+
+### All Prototype Pages Are Accessible
+
+✅ **`http://localhost:3000/documents`** - Document Management
+✅ **`http://localhost:3000/compliance`** - Compliance Tracking & MCL Management  
+✅ **`http://localhost:3000/reports`** - Reporting & Excel Export
+✅ **`http://localhost:3000/notifications`** - Notification Center
+✅ **`http://localhost:3000/forms`** - Forms Management
+✅ **`http://localhost:3000/data-exchange`** - SDWIS Data Exchange
+✅ **`http://localhost:3000/admin/audit-trail`** - Audit Trail Viewer
+
+### Navigation
+
+Use the navigation menu at the top of any page to access all prototype pages.
+
+### Demo Mode
+
+The application runs in **demo mode** without requiring Supabase configuration:
+
+- All pages work with mock data
+- No database connection required
+- All UI features are functional
+- Perfect for presentation demonstrations
+
+### Build Status
+
+✅ **Build successful** - All prototype pages compile without errors
+✅ **All lint errors fixed** - Code is clean and ready
+✅ **Navigation updated** - All prototype pages accessible from menu
 
 ## 🤝 **Contributing**
 

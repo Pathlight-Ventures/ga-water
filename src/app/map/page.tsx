@@ -53,8 +53,26 @@ export default function MapPage() {
     populationMax: ''
   })
 
-  const waterSystemsRepo = new WaterSystemsRepository()
-  const violationsRepo = new ViolationsRepository()
+  // Lazy load repositories - only create when actually needed to avoid SSR issues
+  const getWaterSystemsRepo = useCallback(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      return new WaterSystemsRepository()
+    } catch (error) {
+      console.error('Failed to create WaterSystemsRepository:', error)
+      return null
+    }
+  }, [])
+  
+  const getViolationsRepo = useCallback(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      return new ViolationsRepository()
+    } catch (error) {
+      console.error('Failed to create ViolationsRepository:', error)
+      return null
+    }
+  }, [])
 
   // Search water systems
   const handleSearch = useCallback(async () => {
@@ -62,7 +80,13 @@ export default function MapPage() {
 
     setIsSearching(true)
     try {
-      const results = await waterSystemsRepo.search({
+      const repo = getWaterSystemsRepo()
+      if (!repo) {
+        setSearchResults([])
+        return
+      }
+      
+      const results = await repo.search({
         searchTerm: searchTerm.trim(),
         stateCode: filters.stateCode || undefined,
         pwsType: filters.pwsType || undefined,
@@ -70,25 +94,31 @@ export default function MapPage() {
         hasViolations: filters.hasViolations || undefined,
         limit: 100
       })
-      setSearchResults(results)
+      setSearchResults(results || [])
     } catch (error) {
       console.error('Search error:', error)
       setSearchResults([])
     } finally {
       setIsSearching(false)
     }
-  }, [searchTerm, filters])
+  }, [searchTerm, filters, getWaterSystemsRepo])
 
   // Load violations for selected system
   const loadSystemViolations = useCallback(async (pwsid: string) => {
     try {
-      const violations = await violationsRepo.getByPwsid(pwsid, { limit: 50 })
-      setSystemViolations(violations)
+      const repo = getViolationsRepo()
+      if (!repo) {
+        setSystemViolations([])
+        return
+      }
+      
+      const violations = await repo.getByPwsid(pwsid, { limit: 50 })
+      setSystemViolations(violations || [])
     } catch (error) {
       console.error('Error loading violations:', error)
       setSystemViolations([])
     }
-  }, [])
+  }, [getViolationsRepo])
 
   // Handle system selection
   const handleSystemSelect = useCallback((system: WaterSystemSearchResult) => {

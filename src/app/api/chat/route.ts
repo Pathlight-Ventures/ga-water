@@ -41,6 +41,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "Chat feature is not configured. GEMINI_API_KEY is missing." },
+        { status: 503 }
+      );
+    }
+
     // Initialize Supabase client
     const supabase = createClient();
 

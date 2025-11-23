@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Mail, Lock, AlertCircle, CheckCircle, Eye, EyeOff, Loader2, User, Building } from 'lucide-react'
+import { Mail, Lock, AlertCircle, CheckCircle, Eye, EyeOff, Loader2, User, Building, Sparkles } from 'lucide-react'
+import { useAuth } from '@/lib/contexts/AuthContext'
 
 type UserRole = 'researcher' | 'regulator' | 'consultant' | 'public' | 'admin'
 
@@ -36,9 +37,18 @@ function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
+  const { setFakeAuth } = useAuth()
 
   // Get redirect URL from query parameters
   const redirectTo = searchParams.get('redirectTo') || '/settings'
+
+  const handleDemoLogin = (userType: 'partner' | 'admin') => {
+    setFakeAuth(userType)
+    setSuccess(`Demo login successful! Logged in as ${userType === 'admin' ? 'Admin' : 'Partner'} user.`)
+    setTimeout(() => {
+      router.push('/settings')
+    }, 500)
+  }
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -589,6 +599,39 @@ function LoginPage() {
                 >
                   Create New Account
                 </Button>
+
+                {/* Demo Mode Buttons */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-gray-500">Or try demo mode</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600"
+                    onClick={() => handleDemoLogin('partner')}
+                    disabled={loading}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Demo Partner
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-orange-500 text-orange-600 hover:bg-orange-50 hover:border-orange-600"
+                    onClick={() => handleDemoLogin('admin')}
+                    disabled={loading}
+                  >
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Demo Admin
+                  </Button>
+                </div>
               </div>
             </form>
           )}

@@ -17,9 +17,12 @@ import {
   XCircle, 
   Search,
   RefreshCw,
-  User
+  User,
+  Shield,
+  Database
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function AdminDashboard() {
   const { user, isAdmin, loading } = useAuth()
@@ -34,8 +37,8 @@ export default function AdminDashboard() {
     byRole: Record<string, number>;
   } | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<UserStatus | ''>('')
-  const [roleFilter, setRoleFilter] = useState<UserRole | ''>('')
+  const [statusFilter, setStatusFilter] = useState<UserStatus | 'all'>('all')
+  const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all')
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectModal, setShowRejectModal] = useState(false)
@@ -99,8 +102,8 @@ export default function AdminDashboard() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.organization.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesStatus = !statusFilter || user.status === statusFilter
-    const matchesRole = !roleFilter || user.role === roleFilter
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter
     
     return matchesSearch && matchesStatus && matchesRole
   })
@@ -281,6 +284,49 @@ export default function AdminDashboard() {
           </Card>
         )}
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Link href="/admin/roles">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-8 h-8 text-blue-600" />
+                  <div>
+                    <h3 className="font-semibold">Role Management</h3>
+                    <p className="text-sm text-gray-600">Manage roles and permissions</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/admin/audit-trail">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <Database className="w-8 h-8 text-green-600" />
+                  <div>
+                    <h3 className="font-semibold">Audit Trail</h3>
+                    <p className="text-sm text-gray-600">View data change history</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/admin/certificate-verification">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-8 h-8 text-purple-600" />
+                  <div>
+                    <h3 className="font-semibold">Certificate Verification</h3>
+                    <p className="text-sm text-gray-600">Verify operator certificates</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
         {/* All Users */}
         <Card>
           <CardHeader>
@@ -310,12 +356,12 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <Label htmlFor="status-filter">Status</Label>
-                <Select value={statusFilter} onValueChange={(value: UserStatus | '') => setStatusFilter(value)}>
+                <Select value={statusFilter} onValueChange={(value: UserStatus | 'all') => setStatusFilter(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="All statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="all">All statuses</SelectItem>
                     <SelectItem value="pending_approval">Pending</SelectItem>
                     <SelectItem value="approved">Approved</SelectItem>
                     <SelectItem value="rejected">Rejected</SelectItem>
@@ -325,12 +371,12 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <Label htmlFor="role-filter">Role</Label>
-                <Select value={roleFilter} onValueChange={(value: UserRole | '') => setRoleFilter(value)}>
+                <Select value={roleFilter} onValueChange={(value: UserRole | 'all') => setRoleFilter(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="All roles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All roles</SelectItem>
+                    <SelectItem value="all">All roles</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="researcher">Researcher</SelectItem>
                     <SelectItem value="regulator">Regulator</SelectItem>

@@ -1,7 +1,56 @@
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isDemoMode } from '@/lib/supabase/client'
 
 export type UserRole = 'researcher' | 'regulator' | 'consultant' | 'public' | 'admin'
 export type UserStatus = 'pending_approval' | 'approved' | 'rejected' | 'suspended'
+
+// Mock data for demo mode
+const mockUsers: UserProfile[] = [
+  {
+    id: '1',
+    user_id: 'user-1',
+    email: 'partner1@example.com',
+    full_name: 'John Doe',
+    organization: 'Atlanta Water Authority',
+    role: 'regulator' as UserRole,
+    status: 'approved',
+    created_at: '2025-01-01T00:00:00Z',
+    updated_at: '2025-01-15T00:00:00Z'
+  },
+  {
+    id: '2',
+    user_id: 'user-2',
+    email: 'partner2@example.com',
+    full_name: 'Jane Smith',
+    organization: 'Savannah Water Works',
+    role: 'consultant' as UserRole,
+    status: 'approved',
+    created_at: '2025-01-05T00:00:00Z',
+    updated_at: '2025-01-20T00:00:00Z'
+  },
+  {
+    id: '3',
+    user_id: 'user-3',
+    email: 'pending@example.com',
+    full_name: 'Bob Johnson',
+    organization: 'Macon Utilities',
+    role: 'regulator' as UserRole,
+    status: 'pending_approval',
+    created_at: '2025-11-15T00:00:00Z',
+    updated_at: '2025-11-15T00:00:00Z'
+  }
+]
+
+const mockPendingApprovals: PendingApproval[] = [
+  {
+    id: '3',
+    user_id: 'user-3',
+    email: 'pending@example.com',
+    full_name: 'Bob Johnson',
+    organization: 'Macon Utilities',
+    role: 'regulator' as UserRole,
+    created_at: '2025-11-15T00:00:00Z'
+  }
+]
 
 export interface UserProfile {
   id: string
@@ -36,12 +85,53 @@ export interface UserFilters {
 }
 
 export class UserManagementRepository {
-  private supabase = createClient()
+  private supabase: ReturnType<typeof createClient>
+
+  constructor() {
+    // Initialize Supabase client lazily to avoid SSR issues
+    this.supabase = createClient()
+  }
 
   /**
    * Get user profile by user ID
    */
   async getUserProfile(userId: string): Promise<UserProfile | null> {
+    if (isDemoMode) {
+      // Return mock user profile if it exists
+      const mockUser = mockUsers.find(u => u.user_id === userId || u.id === userId)
+      if (mockUser) {
+        return mockUser
+      }
+      // Return demo admin or partner profile based on common user IDs
+      if (userId === 'demo-admin-id' || userId.includes('admin')) {
+        return {
+          id: 'demo-admin-profile-id',
+          user_id: 'demo-admin-id',
+          email: 'demo@admin.com',
+          full_name: 'Demo Admin',
+          organization: 'Demo Organization',
+          role: 'admin' as UserRole,
+          status: 'approved',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      }
+      if (userId === 'demo-partner-id' || userId.includes('partner')) {
+        return {
+          id: 'demo-partner-profile-id',
+          user_id: 'demo-partner-id',
+          email: 'demo@partner.com',
+          full_name: 'Demo Partner',
+          organization: 'Demo Organization',
+          role: 'regulator' as UserRole,
+          status: 'approved',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      }
+      return null
+    }
+
     try {
       const { data, error } = await this.supabase
         .rpc('get_user_profile', {
@@ -64,6 +154,42 @@ export class UserManagementRepository {
    * Get current user's profile
    */
   async getCurrentUserProfile(): Promise<UserProfile | null> {
+    if (isDemoMode) {
+      // In demo mode, check localStorage for fake auth
+      if (typeof window !== 'undefined') {
+        const storedFakeAuth = localStorage.getItem('demo_fake_auth')
+        if (storedFakeAuth) {
+          const fakeAuthData = JSON.parse(storedFakeAuth)
+          if (fakeAuthData.userType === 'admin') {
+            return {
+              id: 'demo-admin-profile-id',
+              user_id: 'demo-admin-id',
+              email: 'demo@admin.com',
+              full_name: 'Demo Admin',
+              organization: 'Demo Organization',
+              role: 'admin' as UserRole,
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          } else {
+            return {
+              id: 'demo-partner-profile-id',
+              user_id: 'demo-partner-id',
+              email: 'demo@partner.com',
+              full_name: 'Demo Partner',
+              organization: 'Demo Organization',
+              role: 'regulator' as UserRole,
+              status: 'approved',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          }
+        }
+      }
+      return null
+    }
+
     try {
       const { data: { user } } = await this.supabase.auth.getUser()
       if (!user) return null
@@ -105,6 +231,11 @@ export class UserManagementRepository {
    * Get pending approvals (admin only)
    */
   async getPendingApprovals(limit: number = 50, offset: number = 0): Promise<PendingApproval[]> {
+    if (isDemoMode) {
+      // Return mock pending approvals in demo mode
+      return mockPendingApprovals.slice(offset, offset + limit)
+    }
+
     try {
       const { data, error } = await this.supabase
         .rpc('get_pending_approvals', {
@@ -128,6 +259,24 @@ export class UserManagementRepository {
    * Get all users (admin only)
    */
   async getAllUsers(filters: UserFilters = {}): Promise<UserProfile[]> {
+    if (isDemoMode) {
+      // Return mock users in demo mode
+      let users = [...mockUsers]
+      
+      // Apply filters
+      if (filters.status) {
+        users = users.filter(u => u.status === filters.status)
+      }
+      
+      if (filters.role) {
+        users = users.filter(u => u.role === filters.role)
+      }
+      
+      const limit = filters.limit || 50
+      const offset = filters.offset || 0
+      return users.slice(offset, offset + limit)
+    }
+
     try {
       const { data, error } = await this.supabase
         .rpc('get_all_users', {
@@ -278,5 +427,18 @@ export class UserManagementRepository {
   }
 }
 
-// Export singleton instance
-export const userManagementRepo = new UserManagementRepository() 
+// Export singleton instance - created lazily to avoid SSR issues
+let _userManagementRepoInstance: UserManagementRepository | null = null
+export const getUserManagementRepo = (): UserManagementRepository => {
+  if (!_userManagementRepoInstance) {
+    _userManagementRepoInstance = new UserManagementRepository()
+  }
+  return _userManagementRepoInstance
+}
+export const userManagementRepo = new Proxy({} as UserManagementRepository, {
+  get: (_target, prop: string | symbol) => {
+    const repo = getUserManagementRepo()
+    const value = (repo as unknown as Record<string | symbol, unknown>)[prop]
+    return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(repo) : value
+  }
+}) 

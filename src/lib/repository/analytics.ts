@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/client'
+import { createClient, isDemoMode } from '@/lib/supabase/client'
 
 export interface ComplianceTrend {
   month_date: string
@@ -13,12 +13,37 @@ export interface AnalyticsFilters {
 }
 
 export class AnalyticsRepository {
-  private supabase = createClient()
+  private supabase: ReturnType<typeof createClient>
+
+  constructor() {
+    // Initialize Supabase client lazily to avoid SSR issues
+    this.supabase = createClient()
+  }
 
   /**
    * Get compliance trends over time
    */
   async getComplianceTrends(filters: AnalyticsFilters = {}): Promise<ComplianceTrend[]> {
+    if (isDemoMode) {
+      // Return mock compliance trends in demo mode
+      const monthsBack = filters.monthsBack || 12
+      const trends: ComplianceTrend[] = []
+      const now = new Date()
+      
+      for (let i = monthsBack - 1; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        trends.push({
+          month_date: date.toISOString().substring(0, 7),
+          total_systems: 106,
+          compliant_systems: 98 + Math.floor(Math.random() * 3),
+          non_compliant_systems: 8 - Math.floor(Math.random() * 3),
+          compliance_rate: 92 + Math.random() * 3
+        })
+      }
+      
+      return trends
+    }
+
     try {
       const { data, error } = await this.supabase
         .rpc('get_compliance_trends', {
@@ -47,6 +72,26 @@ export class AnalyticsRepository {
    * Get violation trends by category
    */
   async getViolationTrendsByCategory(monthsBack: number = 12): Promise<unknown[]> {
+    if (isDemoMode) {
+      // Return mock violation trends in demo mode
+      const now = new Date()
+      const trends: Array<{ month: string; categories: Record<string, number> }> = []
+      
+      for (let i = monthsBack - 1; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        trends.push({
+          month: date.toISOString().substring(0, 7),
+          categories: {
+            'MCL': Math.floor(Math.random() * 5) + 1,
+            'TT': Math.floor(Math.random() * 3),
+            'MR': Math.floor(Math.random() * 2)
+          }
+        })
+      }
+      
+      return trends
+    }
+
     try {
       const { data, error } = await this.supabase
         .from('violations_enforcement')
@@ -157,6 +202,26 @@ export class AnalyticsRepository {
    * Get system performance metrics
    */
   async getSystemPerformanceMetrics(): Promise<unknown> {
+    if (isDemoMode) {
+      // Return mock metrics in demo mode
+      return {
+        water_systems: {
+          total: 106,
+          active: 106,
+          with_violations: 8,
+          total_population: 1310000,
+          avg_population: 12358
+        },
+        violations: {
+          total: 12,
+          active: 5,
+          health_based: 8,
+          avg_resolution_days: 15
+        },
+        compliance_rate: '92.5'
+      }
+    }
+
     try {
       // Get water system stats
       const { data: wsStats, error: wsError } = await this.supabase
@@ -265,6 +330,22 @@ export class AnalyticsRepository {
    * Get county-based statistics
    */
   async getCountyStatistics(): Promise<unknown[]> {
+    if (isDemoMode) {
+      // Return mock county statistics in demo mode
+      return [
+        { county: 'Fulton', systems: 25, violations: 3, population: 500000 },
+        { county: 'DeKalb', systems: 18, violations: 2, population: 400000 },
+        { county: 'Cobb', systems: 15, violations: 1, population: 350000 },
+        { county: 'Gwinnett', systems: 12, violations: 1, population: 300000 },
+        { county: 'Chatham', systems: 8, violations: 0, population: 150000 },
+        { county: 'Richmond', systems: 6, violations: 1, population: 200000 },
+        { county: 'Muscogee', systems: 5, violations: 0, population: 180000 },
+        { county: 'Clarke', systems: 4, violations: 0, population: 120000 },
+        { county: 'Bibb', systems: 4, violations: 1, population: 160000 },
+        { county: 'Houston', systems: 3, violations: 0, population: 90000 }
+      ]
+    }
+
     try {
       // Get all water systems with their geographic data
       const { data: waterSystems, error: wsError } = await this.supabase
@@ -339,5 +420,18 @@ export class AnalyticsRepository {
   }
 }
 
-// Export singleton instance
-export const analyticsRepo = new AnalyticsRepository() 
+// Export singleton instance - created lazily to avoid SSR issues
+let _analyticsRepoInstance: AnalyticsRepository | null = null
+export const getAnalyticsRepo = (): AnalyticsRepository => {
+  if (!_analyticsRepoInstance) {
+    _analyticsRepoInstance = new AnalyticsRepository()
+  }
+  return _analyticsRepoInstance
+}
+export const analyticsRepo = new Proxy({} as AnalyticsRepository, {
+  get: (_target, prop: string | symbol) => {
+    const repo = getAnalyticsRepo()
+    const value = (repo as unknown as Record<string | symbol, unknown>)[prop]
+    return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(repo) : value
+  }
+}) 

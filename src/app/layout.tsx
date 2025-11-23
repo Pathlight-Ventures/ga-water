@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SpeedTrials 2025 - Georgia Drinking Water Data Explorer",
+  title: "Georgia Drinking Water Data Explorer",
   description: "Exploring Q1 2025 SDWIS data for Georgia's public water systems",
 };
 

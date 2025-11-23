@@ -4,30 +4,61 @@ import type { NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
+  
+  // Skip auth checks in demo mode (no Supabase configured)
+  const isDemoMode = !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  
+  if (isDemoMode) {
+    // In demo mode, allow all routes
+    return res
+  }
+  
   const supabase = createMiddlewareClient({ req, res })
 
   // Refresh session if expired - required for Server Components
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  let session = null
+  try {
+    const {
+      data: { session: sessionData },
+    } = await supabase.auth.getSession()
+    session = sessionData
+  } catch (error) {
+    // If Supabase fails, continue without session (demo mode)
+    console.warn('Supabase session check failed, continuing in demo mode:', error)
+  }
 
-  // Define protected routes that require authentication
-  const protectedRoutes = ['/settings', '/admin']
-  const authRoutes = ['/auth/login', '/auth/signup']
-  const publicRoutes = ['/', '/analytics', '/map', '/search']
+  // Define route categories
+  // Public routes - always accessible without authentication
+  const publicRoutes = ['/', '/map', '/compliance', '/reports']
+  // Protected routes - require authentication
+  const protectedRoutes = ['/settings', '/documents', '/notifications', '/forms', '/data-exchange']
+  // Admin routes - require admin role
+  const adminRoutes = ['/admin']
+  // Auth routes - login, signup, etc.
+  const authRoutes = ['/auth/login', '/auth/signup', '/auth/pending-approval', '/auth/account-rejected', '/auth/account-suspended']
   
+  const pathname = req.nextUrl.pathname
+  
+  const isPublicRoute = publicRoutes.some(route => 
+    pathname === route || pathname.startsWith(route + '/')
+  )
   const isProtectedRoute = protectedRoutes.some(route => 
-    req.nextUrl.pathname.startsWith(route)
+    pathname.startsWith(route)
+  )
+  const isAdminRoute = adminRoutes.some(route => 
+    pathname.startsWith(route)
   )
   const isAuthRoute = authRoutes.some(route => 
-    req.nextUrl.pathname.startsWith(route)
+    pathname.startsWith(route)
   )
-  const isPublicRoute = publicRoutes.some(route => 
-    req.nextUrl.pathname === route
-  )
+  
+  // Allow public routes without authentication
+  if (isPublicRoute) {
+    return res
+  }
 
-  // If accessing a protected route without authentication, redirect to login
-  if (isProtectedRoute && !session) {
+  // If accessing protected or admin routes without authentication, redirect to login
+  if ((isProtectedRoute || isAdminRoute) && !session) {
     const redirectUrl = new URL('/auth/login', req.url)
     redirectUrl.searchParams.set('redirectTo', req.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
@@ -38,8 +69,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/settings', req.url))
   }
 
-  // Check user approval status for authenticated users
-  if (session && (isProtectedRoute || isPublicRoute)) {
+  // Check user approval status and permissions for authenticated users
+  if (session && (isProtectedRoute || isAdminRoute)) {
     try {
       // Get user profile to check approval status
       const { data: profileData, error } = await supabase
