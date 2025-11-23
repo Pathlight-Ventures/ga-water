@@ -8,10 +8,8 @@ import { ChevronDown, MessageCircle, MapPin, Building2 } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
-import { useAuth } from '@/lib/contexts/AuthContext'
 
 export default function Home() {
-  const { isAuthenticated, isApproved } = useAuth()
   const [address, setAddress] = useState('')
   const [searchMode, setSearchMode] = useState<'address' | 'system'>('address')
   const [showAdvanced, setShowAdvanced] = useState(false)
