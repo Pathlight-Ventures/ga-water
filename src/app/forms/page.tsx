@@ -37,17 +37,17 @@ interface WorkflowRule {
 }
 
 const mergeFields = [
-  '{{water_system_name}}',
-  '{{date_of_violation}}',
-  '{{parameter_name}}',
-  '{{measured_value}}',
-  '{{mcl_limit}}',
-  '{{contact_name}}',
-  '{{current_date}}',
-  '{{system_id}}',
-  '{{facility_name}}',
-  '{{report_month}}',
-  '{{report_year}}'
+  'water_system_name',
+  'date_of_violation',
+  'parameter_name',
+  'measured_value',
+  'mcl_limit',
+  'contact_name',
+  'current_date',
+  'system_id',
+  'facility_name',
+  'report_month',
+  'report_year'
 ]
 
 const mockTemplates: Template[] = [
@@ -56,14 +56,14 @@ const mockTemplates: Template[] = [
     name: 'Violation Notice Letter',
     type: 'letter',
     description: 'Standard violation notice letter',
-    mergeFields: ['{{water_system_name}}', '{{date_of_violation}}', '{{parameter_name}}', '{{measured_value}}', '{{mcl_limit}}']
+    mergeFields: ['water_system_name', 'date_of_violation', 'parameter_name', 'measured_value', 'mcl_limit']
   },
   {
     id: '2',
     name: 'Compliance Certificate',
     type: 'certificate',
     description: 'Compliance certification document',
-    mergeFields: ['{{water_system_name}}', '{{current_date}}', '{{system_id}}']
+    mergeFields: ['water_system_name', 'current_date', 'system_id']
   }
 ]
 
@@ -94,6 +94,10 @@ export default function FormsPage() {
 
   const handleInsertMergeField = (field: string) => {
     setTemplateContent(templateContent + field + ' ')
+  }
+  
+  const formatMergeField = (field: string) => {
+    return field.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
   const handleGenerateDocument = () => {
@@ -152,7 +156,7 @@ export default function FormsPage() {
                         <div className="flex gap-2 mt-2">
                           {template.mergeFields.map((field, index) => (
                             <Badge key={index} variant="secondary" className="text-xs">
-                              {field}
+                              {formatMergeField(field)}
                             </Badge>
                           ))}
                         </div>
@@ -246,7 +250,7 @@ export default function FormsPage() {
                     >
                       <code className="text-sm font-mono">{field}</code>
                       <p className="text-xs text-gray-500 mt-1">
-                        {field.replace(/[{}]/g, '').replace(/_/g, ' ')}
+                        {formatMergeField(field)}
                       </p>
                     </div>
                   ))}
